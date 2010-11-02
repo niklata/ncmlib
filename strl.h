@@ -30,8 +30,6 @@
 #ifndef NCM_STRL_H_
 #define NCM_STRL_H_ 1
 
-#include "config.h"
-
 #ifndef HAVE_STRLCPY
 size_t strlcpy (char *dest, char *src, size_t size);
 #endif /* HAVE_STRLCPY */
