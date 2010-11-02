@@ -1,5 +1,5 @@
 /* strlist.c - string list functions
- * Time-stamp: <2010-11-01 20:46:36 nk>
+ * Time-stamp: <2010-11-02 02:39:06 nk>
  *
  * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -35,7 +35,7 @@
 #include "malloc.h"
 #include "strlist.h"
 
-void add_to_strlist(char *name, strlist_t **list)
+void add_to_strlist(strlist_t **list, char *name)
 {
 	strlist_t *item, *t;
 	char *s;

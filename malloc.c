@@ -1,6 +1,6 @@
 /*
  * malloc.c - memory allocation functions
- * Time-stamp: <2010-11-01 22:52:18 nk>
+ * Time-stamp: <2010-11-02 03:17:31 nk>
  *
  * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -32,10 +32,20 @@
 #include "log.h"
 
 void *xmalloc(size_t size) {
-        void *ret;
+    void *ret;
 
-        ret = malloc(size);
-        if (ret == NULL)
-                suicide("FATAL - malloc() failed\n");
-        return ret;
+    ret = malloc(size);
+    if (ret == NULL)
+        suicide("FATAL - malloc() failed\n");
+    return ret;
+}
+
+void *xrealloc(void *ptr, size_t size)
+{
+    void *ret;
+
+    ret = realloc(ptr, size);
+    if (size && ret == NULL)
+        suicide("FATAL - realloc() failed\n");
+    return ret;
 }

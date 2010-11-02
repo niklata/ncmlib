@@ -1,6 +1,6 @@
 /*
  * network.h - abstracted task-oriented network functions
- * Time-stamp: <2010-11-02 01:29:55 nk>
+ * Time-stamp: <2010-11-02 02:50:31 nk>
  *
  * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.

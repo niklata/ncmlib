@@ -1,6 +1,6 @@
 /*
  * network.c - abstracted task-oriented network functions
- * Time-stamp: <2010-11-02 01:59:06 nk>
+ * Time-stamp: <2010-11-02 03:12:51 nk>
  *
  * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -58,7 +58,7 @@ int tcp_set_sock_nonblock(int fd)
 }
 
 /**
- * Sets up a listening socket.
+ * Sets up listening sockets associated with a single address and port.
  *
  * @param node string describing host or address to which we will bind;
  *             NULL means to bind to all available addresses
@@ -67,8 +67,7 @@ int tcp_set_sock_nonblock(int fd)
  * @return NULL if no listening fds are created; otherwise, an array of
  *         integers.  The first integer in the array will be the total
  *         number of elements in the array.  Each subsequent integer
- *         will either be -1 representing a failed bind for the
- *         corresponding address, or the value of the listening fd.
+ *         will be the value of a fd listening on the specified node.
  *         This array should be freed with free().
  */
 int *tcp_server_socket(const char *node, unsigned int port, int backlog)
@@ -109,7 +108,6 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
         int fd = socket(iter->ai_family, iter->ai_socktype, 0);
         if (fd < 0) {
             fprintf(stderr, "server_socket - socket(): %s", strerror(errno));
-            fdarray[fditer++] = -1;
             continue;
         }
 
@@ -117,14 +115,12 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
         if (ret) {
             fprintf(stderr, "server_socket - setsockopt(): %s", strerror(errno));
             close(fd);
-            fdarray[fditer++] = -1;
             continue;
         }
         ret = setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof opt);
         if (ret) {
             fprintf(stderr, "server_socket - setsockopt(): %s", strerror(errno));
             close(fd);
-            fdarray[fditer++] = -1;
             continue;
         }
         ret = tcp_set_sock_nonblock(fd);
@@ -132,7 +128,6 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
             fprintf(stderr, "server_socket - fcntl(O_NONBLOCK): %s",
                     strerror(errno));
             close(fd);
-            fdarray[fditer++] = -1;
             continue;
         }
 
@@ -140,7 +135,6 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
         if (ret) {
             fprintf(stderr, "server_socket - bind(): %s", strerror(errno));
             close(fd);
-            fdarray[fditer++] = -1;
             continue;
         }
 
@@ -148,10 +142,14 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
         if (ret) {
             fprintf(stderr, "server_socket - listen(): %s", strerror(errno));
             close(fd);
-            fdarray[fditer++] = -1;
             continue;
         }
         fdarray[fditer++] = fd;
+    }
+
+    if (fditer < numfds + 1) {
+        fdarray[0] = fditer;
+        fdarray = xrealloc(fdarray, fditer);
     }
 
     freeaddrinfo(result);

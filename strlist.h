@@ -1,5 +1,5 @@
 /* strlist.h - string list functions
- * Time-stamp: <2010-11-01 20:46:09 nk>
+ * Time-stamp: <2010-11-02 02:39:23 nk>
  *
  * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -35,7 +35,7 @@ typedef struct {
     void *next;
 } strlist_t;
 
-void add_to_strlist(char *name, strlist_t **list);
+void add_to_strlist(strlist_t **list, char *name);
 void free_strlist(strlist_t *head);
 void free_stritem(strlist_t **p);
 int get_strlist_arity(strlist_t *list);

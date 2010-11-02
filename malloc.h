@@ -1,6 +1,6 @@
 /*
  * malloc.h - memory allocation functions
- * Time-stamp: <2010-11-01 22:52:40 nk>
+ * Time-stamp: <2010-11-02 03:17:44 nk>
  *
  * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -32,5 +32,6 @@
 #define NCM_MALLOC_H_
 
 void *xmalloc(size_t size);
+void *xrealloc(void *ptr, size_t size);
 
 #endif
