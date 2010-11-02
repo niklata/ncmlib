@@ -1,6 +1,6 @@
 /*
  * network.c - abstracted task-oriented network functions
- * Time-stamp: <2010-11-01 21:05:12 nk>
+ * Time-stamp: <2010-11-01 22:45:51 njk>
  *
  * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -38,6 +38,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+
+#include "malloc.h"
 
 /**
  * Given a TCP socket, set that socket to non-blocking mode.
