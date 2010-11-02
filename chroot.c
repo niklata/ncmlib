@@ -33,7 +33,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include "ncm_defines.h"
+#include "defines.h"
 #include "log.h"
 #include "strl.h"
 

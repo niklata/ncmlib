@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "ncm_defines.h"
+#include "defines.h"
 #include "log.h"
 
 void write_pid(char *file) {

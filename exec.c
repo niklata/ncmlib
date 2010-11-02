@@ -35,7 +35,7 @@
 #include <string.h>
 #include <pwd.h>
 
-#include "ncm_defines.h"
+#include "defines.h"
 #include "log.h"
 #include "nstrl.h"
 
