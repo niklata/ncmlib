@@ -37,7 +37,7 @@
 
 #include "defines.h"
 #include "log.h"
-#include "nstrl.h"
+#include "strl.h"
 
 #ifndef HAVE_CLEARENV
 extern char **environ;
