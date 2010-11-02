@@ -1,5 +1,5 @@
 /* log.c - simple logging support
- * Time-stamp: <2010-11-01 17:30:58 nk>
+ * Time-stamp: <2010-11-01 22:36:26 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -53,6 +53,7 @@ void log_line(char *format, ...) {
   } else {
     va_start(argp, format);
     vfprintf(stderr, format, argp);
+    fprintf(stderr, "\n");
     va_end(argp);
   }
   closelog();
@@ -74,6 +75,7 @@ void suicide(char *format, ...) {
     va_start(argp, format);
     vfprintf(stderr, format, argp);
     va_end(argp);
+    fprintf(stderr, "\n");
     perror(NULL);
   }
   closelog();
