@@ -1,6 +1,6 @@
 /*
  * network.h - abstracted task-oriented network functions
- * Time-stamp: <2010-11-01 20:05:42 nk>
+ * Time-stamp: <2010-11-02 01:29:55 nk>
  *
  * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -33,58 +33,7 @@
 
 #include <sys/socket.h>
 
-typedef enum {
-    NET_SSL_TYPENULL = 0,
-    NET_SSL_CLIENT,
-    NET_SSL_SERVER
-} net_ssl_type_t;
-
-typedef enum {
-    NET_SSL_NULL = 0, /* structure initialized but nothing else */
-    NET_SSL_CONNECTING = 1, /* ssl connection not yet established */
-    NET_SSL_CONNECTED = 2, /* ssl connection established */
-    NET_SSL_OK, /* ssl connection needs no pending ssl work */
-    NET_SSL_CLOSING, /* ssl connection in the process of shutdown/close */
-    NET_SSL_CLOSED, /* ssl connection cleanly shut down */
-    NET_SSL_FAILED /* ssl connection had a fatal error */
-} net_ssl_state_t;
-
-#include <openssl/crypto.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-
-typedef void (*net_ssl_cb_fn_t)(void *tcp, void *userdata);
-
-typedef struct {
-    SSL *ssl;
-    void *cb_data;
-    net_ssl_state_t state;
-    net_ssl_type_t type;
-    net_ssl_cb_fn_t cb;
-    unsigned int verify:1;
-} net_ssl_t;
-
-/**
- * Opaque structure for a TCP connection.
- */
-typedef struct {
-    net_ssl_t *ssl;
-    int fd;
-    int ref;
-} net_tcp_t;
-
 void tcp_set_sock_nonblock(int fd);
-int tcp_client_socket(char *name, GSList *addrs, unsigned int port);
-int tcp_server_socket(int domain, unsigned int port, int backlog);
-
-net_tcp_t *net_tcp_client_new(char *name, GSList *addrs, unsigned int port);
-net_tcp_t *net_tcp_server_new(int domain, unsigned int port, int backlog);
-net_tcp_t *net_tcp_accept_new(net_tcp_t *listentcp, struct sockaddr *addr,
-                              socklen_t *addrlen);
-
-int net_tcp_ref(net_tcp_t *tcp);
-int net_tcp_del(net_tcp_t *tcp);
-int net_tcp_write(net_tcp_t *tcp, const void *buf, size_t len, size_t *written);
-int net_tcp_read(net_tcp_t *tcp, void *buf, size_t len);
+int *tcp_server_socket(const char *node, unsigned int port, int backlog);
 
 #endif /* NCM_NETWORK_H_ */
