@@ -1,2 +1,8 @@
-Import c-ares for DNS backend.
-Import libev for event notification abstraction.
+Write a thin event notification abstraction.
+
+Write a small generic list implementation, and replace GSList use in 
+network.c.
+
+Create a real build system: build a static lib.
+Make SSL toggleable at build.
+Disable NDEBUG for real builds -- we use assertions.
