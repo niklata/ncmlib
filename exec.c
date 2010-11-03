@@ -1,6 +1,6 @@
 /*
  * exec.c - functions to exec a job
- * Time-stamp: <2010-11-01 22:45:35 njk>
+ * Time-stamp: <2010-11-02 07:25:20 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -44,7 +44,7 @@
 extern char **environ;
 #endif
 
-void ncm_fix_env(uid_t uid)
+void ncm_fix_env(uid_t uid, int chdir_home)
 {
     struct passwd *pw;
     char uids[20];
@@ -78,9 +78,16 @@ void ncm_fix_env(uid_t uid)
     if (setenv("PWD", pw->pw_dir, 1))
         goto fail_fix_env;
 
-    if (chdir(pw->pw_dir)) {
-        log_line("Failed to chdir to uid %i's homedir.  Not exec'ing.", uid);
-        exit(EXIT_FAILURE);
+    if (chdir_home) {
+        if (chdir(pw->pw_dir)) {
+            log_line("Failed to chdir to uid %i's homedir.  Not exec'ing.", uid);
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        if (chdir("/")) {
+            log_line("Failed to chdir to root directory.  Not exec'ing.", uid);
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (setenv("SHELL", pw->pw_shell, 1))

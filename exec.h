@@ -1,6 +1,6 @@
 /*
  * exec.h - functions to exec a job
- * Time-stamp: <2010-11-01 18:35:45 nk>
+ * Time-stamp: <2010-11-02 07:24:57 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -31,7 +31,7 @@
 #ifndef NCM_EXEC_H_
 #define NCM_EXEC_H_
 
-void ncm_fix_env(uid_t uid);
+void ncm_fix_env(uid_t uid, int chdir_home);
 void ncm_execute(char *command, char *args);
 
 #endif
