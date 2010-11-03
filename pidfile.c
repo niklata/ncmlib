@@ -1,5 +1,5 @@
 /* pidfile.c - process id file functions
- * Time-stamp: <2010-11-01 19:18:11 nk>
+ * Time-stamp: <2010-11-03 05:19:23 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -36,7 +36,7 @@
 #include "defines.h"
 #include "log.h"
 
-void write_pid(char *file) {
+void write_pid(const char *file) {
     FILE *f;
     size_t written, len;
     char buf[MAXLINE];
@@ -60,7 +60,7 @@ void write_pid(char *file) {
 }
 
 /* Return 0 on success, -1 on failure. */
-int file_exists(char *file, char *mode) {
+int file_exists(const char *file, const char *mode) {
     FILE *f;
 
     if (file == NULL || mode == NULL) {

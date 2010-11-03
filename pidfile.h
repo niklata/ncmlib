@@ -1,5 +1,5 @@
 /* pidfile.h - process id file functions
- * Time-stamp: <2010-11-01 18:34:55 nk>
+ * Time-stamp: <2010-11-03 05:19:41 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -30,8 +30,8 @@
 #ifndef NCM_PIDFILE_H_
 #define NCM_PIDFILE_H_ 1
 
-void write_pid(char *file);
-int file_exists(char *file, char *mode);
+void write_pid(const char *file);
+int file_exists(const char *file, const char *mode);
 
 #endif
 
