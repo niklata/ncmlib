@@ -1,5 +1,5 @@
 /* strl.h - header file for strlcpy/strlcat implementation
- * Time-stamp: <2010-11-01 17:19:39 nk>
+ * Time-stamp: <2010-11-03 05:24:52 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -31,11 +31,11 @@
 #define NCM_STRL_H_ 1
 
 #ifndef HAVE_STRLCPY
-size_t strlcpy (char *dest, char *src, size_t size);
+size_t strlcpy (char *dest, const char *src, size_t size);
 #endif /* HAVE_STRLCPY */
 
 #ifndef HAVE_STRLCAT
-size_t strlcat (char *dest, char *src, size_t size);
+size_t strlcat (char *dest, const char *src, size_t size);
 #endif /* HAVE_STRLCAT */
 
 #endif

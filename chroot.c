@@ -1,5 +1,5 @@
 /* chroot.c - chroots ndyndns jobs
- * Time-stamp: <2010-11-01 20:47:15 nk>
+ * Time-stamp: <2010-11-03 05:23:56 njk>
  *
  * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -51,7 +51,7 @@ int chroot_enabled(void)
     return chroot_enable;
 }
 
-void update_chroot(char *path)
+void update_chroot(const char *path)
 {
 	strlcpy(chrootd, path, sizeof chrootd);
 	chroot_modified = 1;
@@ -72,7 +72,7 @@ void wipe_chroot(void)
 	memset(chrootd, '\0', sizeof chrootd);
 }
 
-void imprison(char *path)
+void imprison(const char *path)
 {
 	int ret;
 

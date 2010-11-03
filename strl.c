@@ -1,5 +1,5 @@
 /* strl.c - strlcpy/strlcat implementation
- * Time-stamp: <2010-11-01 17:20:05 nk>
+ * Time-stamp: <2010-11-03 05:25:02 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -31,7 +31,7 @@
 #include "strl.h"
 
 #ifndef HAVE_STRLCPY
-size_t strlcpy (char *dest, char *src, size_t size)
+size_t strlcpy (char *dest, const char *src, size_t size)
 {
 	register unsigned int i = 0;
 
@@ -49,7 +49,7 @@ size_t strlcpy (char *dest, char *src, size_t size)
 #endif /* HAVE_STRLCPY */
 
 #ifndef HAVE_STRLCAT
-size_t strlcat (char *dest, char *src, size_t size)
+size_t strlcat (char *dest, const char *src, size_t size)
 {
 	register char *d = dest;
 
