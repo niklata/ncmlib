@@ -1,5 +1,5 @@
 /* log.c - simple logging support
- * Time-stamp: <2010-11-01 22:36:26 njk>
+ * Time-stamp: <2010-11-03 05:09:33 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -38,7 +38,7 @@ int gflags_quiet = 0;
 int gflags_detach = 1;
 char *gflags_log_name = NULL;
 
-void log_line(char *format, ...) {
+void log_line(const char *format, ...) {
   va_list argp;
 
   if (format == NULL || gflags_quiet)
@@ -59,7 +59,7 @@ void log_line(char *format, ...) {
   closelog();
 }
 
-void suicide(char *format, ...) {
+void suicide(const char *format, ...) {
   va_list argp;
 
   if (format == NULL || gflags_quiet)

@@ -1,5 +1,5 @@
 /* log.h - simple logging support
- * Time-stamp: <2010-11-01 17:30:11 nk>
+ * Time-stamp: <2010-11-03 05:09:50 nk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -34,8 +34,8 @@ extern int gflags_quiet;
 extern int gflags_detach;
 extern char *gflags_log_name;
 
-void log_line(char* format, ...);
-void suicide(char *format, ...);
+void log_line(const char *format, ...);
+void suicide(const char *format, ...);
 
 #endif
 
