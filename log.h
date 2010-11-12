@@ -1,5 +1,5 @@
 /* log.h - simple logging support
- * Time-stamp: <2010-11-03 05:09:50 nk>
+ * Time-stamp: <2010-11-12 05:25:04 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -30,11 +30,17 @@
 #ifndef NCM_LOG_H_
 #define NCM_LOG_H_ 1
 
+#include <syslog.h>
+
 extern int gflags_quiet;
 extern int gflags_detach;
 extern char *gflags_log_name;
 
-void log_line(const char *format, ...);
+#define log_line(...) log_line_l(LOG_INFO, __VA_ARGS__)
+#define log_warning(...) log_line_l(LOG_WARNING, __VA_ARGS__)
+#define log_error(...) log_line_l(LOG_ERR, __VA_ARGS__)
+
+void log_line_l(int level, const char *format, ...);
 void suicide(const char *format, ...);
 
 #endif

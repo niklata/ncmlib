@@ -1,5 +1,5 @@
 /* log.c - simple logging support
- * Time-stamp: <2010-11-03 05:09:33 nk>
+ * Time-stamp: <2010-11-12 05:19:46 njk>
  *
  * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -38,7 +38,8 @@ int gflags_quiet = 0;
 int gflags_detach = 1;
 char *gflags_log_name = NULL;
 
-void log_line(const char *format, ...) {
+void log_line_l(int level, const char *format, ...)
+{
   va_list argp;
 
   if (format == NULL || gflags_quiet)
@@ -47,7 +48,7 @@ void log_line(const char *format, ...) {
   if (gflags_detach) {
     openlog(gflags_log_name, LOG_PID, LOG_DAEMON);
     va_start(argp, format);
-    vsyslog(LOG_ERR | LOG_DAEMON, format, argp);
+    vsyslog(level | LOG_DAEMON, format, argp);
     va_end(argp);
     closelog();
   } else {
@@ -59,7 +60,8 @@ void log_line(const char *format, ...) {
   closelog();
 }
 
-void suicide(const char *format, ...) {
+void suicide(const char *format, ...)
+{
   va_list argp;
 
   if (format == NULL || gflags_quiet)
