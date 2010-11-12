@@ -1,5 +1,7 @@
 set(NCMLIB_SRCS
   malloc.c
+  cap.c
+  chroot.c
   pidfile.c
   signals.c
   exec.c
