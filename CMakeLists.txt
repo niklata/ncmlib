@@ -1,14 +1,3 @@
-set(NCMLIB_SRCS
-  malloc.c
-  cap.c
-  chroot.c
-  pidfile.c
-  signals.c
-  exec.c
-  strlist.c
-  strl.c
-  log.c
-  network.c
-  )
+file(GLOB NCMLIB_SRCS "*.c")
 
 add_library(ncmlib ${NCMLIB_SRCS})
