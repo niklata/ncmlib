@@ -29,6 +29,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
@@ -42,38 +44,39 @@ void write_pid(const char *file) {
     char buf[MAXLINE];
 
     f = fopen(file, "w");
-    if (f == NULL) {
-        log_line("FATAL - failed to open pid file \"%s\"!\n", file);
-        exit(EXIT_FAILURE);
-    }
+    if (!f)
+        suicide("%s: fopen(%s) failed: %s", __func__, file, strerror(errno));
 
-    snprintf(buf, sizeof buf - 1, "%i", (unsigned int)getpid());
+    snprintf(buf, sizeof buf, "%i", (unsigned int)getpid());
     len = strlen(buf);
     written = 0;
-    while (written < len)
-        written = fwrite(buf + written, sizeof (char), len - written, f);
-
-    if (fclose(f) != 0) {
-        log_line("FATAL - failed to close pid file \"%s\"!\n", file);
-        exit(EXIT_FAILURE);
+    while (written < len) {
+        written = fwrite(buf + written, 1, len - written, f);
+        if (ferror(f))
+            break;
     }
+
+    if (fclose(f))
+        suicide("%s: fclose(%s) failed: %s", __func__, file, strerror(errno));
 }
 
 /* Return 0 on success, -1 on failure. */
-int file_exists(const char *file, const char *mode) {
+int file_exists(const char *file, const char *mode)
+{
     FILE *f;
 
-    if (file == NULL || mode == NULL) {
-        log_line("file_exists: FATAL - coding bug: NULL passed\n");
+    if (!file || !mode) {
+        log_line("%s: coding bug - file or mode were NULL", __func__);
         return -1;
     }
 
     f = fopen(file, mode);
-    if (f == NULL) {
-        log_line("file_exists: FATAL - can't open file %s with mode %s!\n",
-                 file, mode);
+    if (!f) {
+        log_line("%s: fopen(%s, %o) failed: %s", __func__, file, mode,
+                 strerror(errno));
         return -1;
     }
-    fclose(f);
+    if (fclose(f))
+        log_line("%s: fclose(%s) failed: %s", __func__, file, strerror(errno));
     return 0;
 }
