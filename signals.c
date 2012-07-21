@@ -30,6 +30,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include "log.h"
 
 void hook_signal(int signum, void (*fn)(int), int flags) {
@@ -39,10 +41,9 @@ void hook_signal(int signum, void (*fn)(int), int flags) {
   sigemptyset(&new_action.sa_mask);
   new_action.sa_flags = flags;
 
-  if (sigaction(signum, &new_action, NULL)) {
-    log_line("FATAL - failed to hook signal %i\n", signum);
-    exit(EXIT_FAILURE);
-  }
+  if (sigaction(signum, &new_action, NULL))
+    suicide("%s: sigaction(%d, ...) failed: %s", __func__, signum,
+            strerror(errno));
 }
 
 void disable_signal(int signum) {
@@ -52,8 +53,7 @@ void disable_signal(int signum) {
   sigemptyset(&new_action.sa_mask);
   new_action.sa_flags = 0;
 
-  if (sigaction(signum, &new_action, NULL)) {
-    log_line("FATAL - failed to ignore signal %i\n", signum);
-    exit(EXIT_FAILURE);
-  }
+  if (sigaction(signum, &new_action, NULL))
+    suicide("%s: sigaction(%d, ...) failed: %s", __func__, signum,
+            strerror(errno));
 }
