@@ -73,6 +73,7 @@ int tcp_set_sock_nonblock(int fd)
 int *tcp_server_socket(const char *node, unsigned int port, int backlog)
 {
     int ret, opt = 1, *fdarray;
+    size_t sret;
     struct addrinfo hints = {
         .ai_family = AF_UNSPEC,
         .ai_socktype = SOCK_STREAM,
@@ -80,10 +81,10 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
     }, *result = NULL;
     char buf[32];
 
-    ret = snprintf(buf, sizeof buf, "%u", port);
-    if (ret > sizeof buf) {
-        fprintf(stderr, "server_socket: overly long port name %d > %lu",
-				ret, sizeof buf);
+    sret = snprintf(buf, sizeof buf, "%u", port);
+    if (sret > sizeof buf) {
+        fprintf(stderr, "server_socket: overly long port name %lu > %lu",
+				sret, sizeof buf);
 		return NULL;
     }
     ret = getaddrinfo(node, buf, &hints, &result);
