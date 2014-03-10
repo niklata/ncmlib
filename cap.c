@@ -1,7 +1,6 @@
 /* cap.c - POSIX capability support
- * Time-stamp: <2010-11-12 09:01:07 njk>
  *
- * (c) 2004-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2004-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +33,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "cap.h"
 #include "log.h"
 
 void set_cap(uid_t uid, gid_t gid, char *captxt)

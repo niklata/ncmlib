@@ -1,8 +1,7 @@
 /*
  * malloc.c - memory allocation functions
- * Time-stamp: <2010-11-02 03:17:31 nk>
  *
- * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +28,7 @@
  */
 
 #include <stdlib.h>
+#include "malloc.h"
 #include "log.h"
 
 void *xmalloc(size_t size) {

@@ -1,7 +1,6 @@
 /* pidfile.c - process id file functions
- * Time-stamp: <2010-11-03 05:19:23 nk>
  *
- * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +35,7 @@
 #include <string.h>
 
 #include "defines.h"
+#include "pidfile.h"
 #include "log.h"
 
 void write_pid(const char *file) {

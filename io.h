@@ -1,7 +1,6 @@
 /* io.h - light wrappers for POSIX i/o functions
- * Time-stamp: <2010-11-15 19:45:32 njk>
  *
- * (c) 2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

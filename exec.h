@@ -1,8 +1,7 @@
 /*
  * exec.h - functions to exec a job
- * Time-stamp: <2010-11-02 07:24:57 nk>
  *
- * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

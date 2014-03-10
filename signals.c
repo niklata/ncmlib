@@ -1,7 +1,6 @@
 /* signals.c - abstracts signal handling
- * Time-stamp: <2010-11-01 17:25:41 nk>
  *
- * (c) 2004-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2004-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "signals.h"
 #include "log.h"
 
 void hook_signal(int signum, void (*fn)(int), int flags) {

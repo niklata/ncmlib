@@ -1,7 +1,6 @@
 /* log.h - simple logging support
- * Time-stamp: <2010-11-12 05:25:04 njk>
  *
- * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +27,7 @@
  */
 
 #ifndef NCM_LOG_H_
-#define NCM_LOG_H_ 1
+#define NCM_LOG_H_
 
 #include <syslog.h>
 

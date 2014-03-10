@@ -1,7 +1,6 @@
 /* signals.h - abstracts signal handling
- * Time-stamp: <2010-11-01 17:26:11 nk>
  *
- * (c) 2004-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2004-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +27,7 @@
  */
 
 #ifndef NCM_SIGNALS_H_
-#define NCM_SIGNALS_H_ 1
+#define NCM_SIGNALS_H_
 
 void hook_signal(int signum, void (*fn)(int), int flags);
 void disable_signal(int signum);

@@ -1,8 +1,7 @@
 /*
  * network.h - abstracted task-oriented network functions
- * Time-stamp: <2010-11-02 02:50:31 nk>
  *
- * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2008-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +32,7 @@
 
 #include <sys/socket.h>
 
-void tcp_set_sock_nonblock(int fd);
+int tcp_set_sock_nonblock(int fd);
 int *tcp_server_socket(const char *node, unsigned int port, int backlog);
 
 #endif /* NCM_NETWORK_H_ */

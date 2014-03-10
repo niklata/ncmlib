@@ -1,7 +1,6 @@
 /* log.c - simple logging support
- * Time-stamp: <2010-11-12 05:19:46 njk>
  *
- * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,9 +28,10 @@
 
 #include <stdio.h>
 #include <strings.h>
-#include <syslog.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
+#include "log.h"
 
 /* global logging flags */
 int gflags_quiet = 0;

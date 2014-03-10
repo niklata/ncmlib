@@ -1,8 +1,7 @@
 /*
  * network.c - abstracted task-oriented network functions
- * Time-stamp: <2010-11-02 03:12:51 nk>
  *
- * (c) 2008-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2008-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +35,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
 
+#include "network.h"
 #include "malloc.h"
 
 /**

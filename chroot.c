@@ -32,6 +32,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "chroot.h"
 #include "defines.h"
 #include "log.h"
 #include "strl.h"

@@ -1,7 +1,6 @@
 /* io.c - light wrappers for POSIX i/o functions
- * Time-stamp: <2011-06-10 13:51:03 njk>
  *
- * (c) 2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +28,9 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <errno.h>
+
+#include "io.h"
 
 /* returns -1 on error, >= 0 and equal to # chars read on success */
 int safe_read(int fd, char *buf, int len)

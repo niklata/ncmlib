@@ -1,8 +1,7 @@
 /*
  * exec.c - functions to exec a job
- * Time-stamp: <2010-11-02 07:25:20 nk>
  *
- * (c) 2003-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +35,7 @@
 #include <pwd.h>
 
 #include "defines.h"
+#include "exec.h"
 #include "malloc.h"
 #include "log.h"
 #include "strl.h"

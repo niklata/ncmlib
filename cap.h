@@ -1,7 +1,6 @@
 /* cap.h - POSIX capability support
- * Time-stamp: <2010-11-12 08:59:46 njk>
  *
- * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
