@@ -1,7 +1,6 @@
 /* chroot.h - include file for chroot.c
- * Time-stamp: <2010-11-03 05:24:09 njk>
  *
- * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,14 +29,8 @@
 #ifndef NCM_CHROOT_H_
 #define NCM_CHROOT_H_
 
-void disable_chroot(void);
-int chroot_enabled(void);
-void update_chroot(const char *path);
-char *get_chroot(void);
-int chroot_exists(void);
-void wipe_chroot(void);
-void imprison(const char *path);
-void drop_root(uid_t uid, gid_t gid);
+extern void imprison(const char *chroot_dir);
+extern void drop_root(uid_t uid, gid_t gid);
 
 #endif
 
