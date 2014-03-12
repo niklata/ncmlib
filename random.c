@@ -51,11 +51,6 @@
 #include "log.h"
 #include "io.h"
 
-static uint32_t s1_32, s2_32, s3_32, s4_32;
-static bool initialized_32;
-static uint64_t s1_64, s2_64, s3_64, s4_64, s5_64;
-static bool initialized_64;
-
 static void nk_get_rnd_clk(char *seed, size_t len)
 {
     struct timespec ts;
@@ -111,54 +106,46 @@ static void nk_get_urandom_u64(uint64_t *seed)
     nk_get_urandom((char *)seed, sizeof *seed);
 }
 
-static void nk_random_u32_init(void)
+void nk_random_u32_init(struct nk_random_state_u32 *s)
 {
     uint32_t seed;
     nk_get_urandom_u32(&seed);
 
-    s1_32 = seed * 1664525u + (1013904223u|0x10);
-    s2_32 = seed * 1103515245u + (12345u|0x1000);
-    s3_32 = seed * 214013u + (2531011u|0x100000);
-    s4_32 = seed * 2147483629u + (2147483587u|0x10000000);
-
-    initialized_32 = true;
+    s->s1 = seed * 1664525u + (1013904223u|0x10);
+    s->s2 = seed * 1103515245u + (12345u|0x1000);
+    s->s3 = seed * 214013u + (2531011u|0x100000);
+    s->s4 = seed * 2147483629u + (2147483587u|0x10000000);
 }
 
-uint32_t nk_random_u32(void)
+uint32_t nk_random_u32(struct nk_random_state_u32 *s)
 {
-    if (!initialized_32)
-        nk_random_u32_init();
-    s1_32 = ((s1_32 & 0xfffffffe) << 18) ^ (((s1_32 << 6)  ^ s1_32) >> 18);
-    s2_32 = ((s2_32 & 0xfffffff8) << 2)  ^ (((s2_32 << 2)  ^ s2_32) >> 27);
-    s3_32 = ((s3_32 & 0xfffffff0) << 7)  ^ (((s3_32 << 13) ^ s3_32) >> 21);
-    s4_32 = ((s4_32 & 0xffffff80) << 13) ^ (((s4_32 << 3)  ^ s4_32) >> 12);
-    return s1_32 ^ s2_32 ^ s3_32 ^ s4_32;
+    s->s1 = ((s->s1 & 0xfffffffe) << 18) ^ (((s->s1 << 6)  ^ s->s1) >> 18);
+    s->s2 = ((s->s2 & 0xfffffff8) << 2)  ^ (((s->s2 << 2)  ^ s->s2) >> 27);
+    s->s3 = ((s->s3 & 0xfffffff0) << 7)  ^ (((s->s3 << 13) ^ s->s3) >> 21);
+    s->s4 = ((s->s4 & 0xffffff80) << 13) ^ (((s->s4 << 3)  ^ s->s4) >> 12);
+    return s->s1 ^ s->s2 ^ s->s3 ^ s->s4;
 }
 
-static void nk_random_u64_init(void)
+void nk_random_u64_init(struct nk_random_state_u64 *s)
 {
     uint64_t seed;
     nk_get_urandom_u64(&seed);
 
-    s1_64 = seed * 1664525ul + (1013904223ul|0x10);
-    s2_64 = seed * 1103515245ul + (12345ul|0x1000);
-    s3_64 = seed * 214013ul + (2531011ul|0x100000);
-    s4_64 = seed * 2147483629ul + (2147483587ul|0x10000000);
-    s5_64 = seed * 6364136223846793005ul
-                 + (1442695040888963407ul|0x1000000000);
-
-    initialized_64 = true;
+    s->s1 = seed * 1664525ul + (1013904223ul|0x10);
+    s->s2 = seed * 1103515245ul + (12345ul|0x1000);
+    s->s3 = seed * 214013ul + (2531011ul|0x100000);
+    s->s4 = seed * 2147483629ul + (2147483587ul|0x10000000);
+    s->s5 = seed * 6364136223846793005ul
+                   + (1442695040888963407ul|0x1000000000);
 }
 
-uint64_t nk_random_u64(void)
+uint64_t nk_random_u64(struct nk_random_state_u64 *s)
 {
-    if (!initialized_64)
-        nk_random_u64_init();
-    s1_64 = ((s1_64 & 0xfffffffffffffffe) << 10) ^ (((s1_64 << 1)  ^ s1_64) >> 53);
-    s2_64 = ((s2_64 & 0xfffffffffffffe00) << 5)  ^ (((s2_64 << 24) ^ s2_64) >> 50);
-    s3_64 = ((s3_64 & 0xfffffffffffff000) << 29) ^ (((s3_64 << 3)  ^ s3_64) >> 23);
-    s4_64 = ((s4_64 & 0xfffffffffffe0000) << 23) ^ (((s4_64 << 5)  ^ s4_64) >> 24);
-    s5_64 = ((s5_64 & 0xffffffffff800000) << 8)  ^ (((s5_64 << 3)  ^ s5_64) >> 33);
-    return s1_64 ^ s2_64 ^ s3_64 ^ s4_64 ^ s5_64;
+    s->s1 = ((s->s1 & 0xfffffffffffffffe) << 10) ^ (((s->s1 << 1)  ^ s->s1) >> 53);
+    s->s2 = ((s->s2 & 0xfffffffffffffe00) << 5)  ^ (((s->s2 << 24) ^ s->s2) >> 50);
+    s->s3 = ((s->s3 & 0xfffffffffffff000) << 29) ^ (((s->s3 << 3)  ^ s->s3) >> 23);
+    s->s4 = ((s->s4 & 0xfffffffffffe0000) << 23) ^ (((s->s4 << 5)  ^ s->s4) >> 24);
+    s->s5 = ((s->s5 & 0xffffffffff800000) << 8)  ^ (((s->s5 << 3)  ^ s->s5) >> 33);
+    return s->s1 ^ s->s2 ^ s->s3 ^ s->s4 ^ s->s5;
 }
 

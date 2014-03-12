@@ -27,7 +27,18 @@
  */
 #ifndef NCMLIB_RANDOM__
 #define NCMLIB_RANDOM__
-uint32_t nk_random_u32(void);
-uint64_t nk_random_u64(void);
+struct nk_random_state_u32 {
+    uint32_t s1, s2, s3, s4;
+};
+
+extern void nk_random_u32_init(struct nk_random_state_u32 *s);
+extern uint32_t nk_random_u32(struct nk_random_state_u32 *s);
+
+struct nk_random_state_u64 {
+    uint64_t s1, s2, s3, s4, s5;
+};
+
+extern void nk_random_u64_init(struct nk_random_state_u64 *s);
+extern uint64_t nk_random_u64(struct nk_random_state_u64 *s);
 #endif
 
