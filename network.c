@@ -82,7 +82,7 @@ int *tcp_server_socket(const char *node, unsigned int port, int backlog)
 
     sret = snprintf(buf, sizeof buf, "%u", port);
     if (sret > sizeof buf) {
-        fprintf(stderr, "server_socket: overly long port name %lu > %lu",
+        fprintf(stderr, "server_socket: overly long port name %zd > %zd",
 				sret, sizeof buf);
 		return NULL;
     }
