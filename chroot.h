@@ -29,8 +29,8 @@
 #ifndef NCM_CHROOT_H_
 #define NCM_CHROOT_H_
 
-extern void imprison(const char *chroot_dir);
-extern void drop_root(uid_t uid, gid_t gid);
+void imprison(const char *chroot_dir);
+void drop_root(uid_t uid, gid_t gid);
 
 #endif
 
