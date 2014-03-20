@@ -37,7 +37,6 @@
 void add_to_strlist(strlist_t **list, char *name)
 {
 	strlist_t *item, *t;
-	char *s;
 
 	if (!list || !name || !name[0]) return;
 
@@ -51,24 +50,16 @@ void add_to_strlist(strlist_t **list, char *name)
 	}
 
 	t = *list;
-	while (t) {
-		if (t->next == NULL) {
-			t->next = item;
-			return;
-		}
+	while (t)
 		t = t->next;
-	}
-
-	free(item); /* should be impossible, but hey */
-	free(s);
-	return;
+    t->next = item;
 }
 
 void free_strlist(strlist_t *head)
 {
     strlist_t *p = head, *q = NULL;
 
-    while (p != NULL) {
+    while (p) {
         free(p->str);
         q = p;
         p = q->next;
