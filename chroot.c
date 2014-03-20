@@ -35,7 +35,6 @@
 #include "chroot.h"
 #include "defines.h"
 #include "log.h"
-#include "strl.h"
 
 void imprison(const char *chroot_dir)
 {
