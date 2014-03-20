@@ -38,7 +38,6 @@
 #include "exec.h"
 #include "malloc.h"
 #include "log.h"
-#include "strl.h"
 
 #ifndef HAVE_CLEARENV
 extern char **environ;
@@ -141,7 +140,7 @@ void ncm_execute(char *command, char *args)
             q = strchr(p, '\0');
         len = q - p + 1;
         argv[n] = xmalloc(len);
-        strnkcpy(argv[n], p, len);
+        snprintf(argv[n], len, "%s", p);
     }
 
     execv(command, argv);

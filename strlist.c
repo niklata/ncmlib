@@ -1,7 +1,6 @@
 /* strlist.c - string list functions
- * Time-stamp: <2010-11-02 02:39:06 nk>
  *
- * (c) 2005-2010 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,25 +30,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "strl.h"
 #include "malloc.h"
+#include "xstrdup.h"
 #include "strlist.h"
 
 void add_to_strlist(strlist_t **list, char *name)
 {
 	strlist_t *item, *t;
 	char *s;
-	unsigned int len;
 
-	if (!list || !name) return;
-
-	len = strlen(name) + 1;
-	if (len == 1) return;
-	s = xmalloc(len);
-	strnkcpy(s, name, len);
+	if (!list || !name || !name[0]) return;
 
 	item = xmalloc(sizeof (strlist_t));
-	item->str = s;
+	item->str = xstrdup(name);
 	item->next = NULL;
 
 	if (!*list) {
