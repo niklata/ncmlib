@@ -90,19 +90,14 @@ fail_fix_env:
     suicide("%s: failed to sanitize environment.  Not execing.", __func__);
 }
 
-// Not re-entrant or thread-safe.
-void nk_execute(const char *command, const char *args)
+void __attribute__((noreturn))
+nk_execute(const char *command, const char *args)
 {
-    static char *argv[MAX_ARGS];
-    static size_t n;
-
-    /* free memory used on previous execution */
-    for (size_t m = 0; m < n; m++)
-        free(argv[m]);
-    n = 0;
+    char *argv[MAX_ARGS];
+    size_t n;
 
     if (!command)
-        return;
+        exit(EXIT_SUCCESS);
 
     /* strip the path from the command name and store in cmdname */
     const char *p = strrchr(command, '/');
@@ -121,18 +116,14 @@ void nk_execute(const char *command, const char *args)
         if (!q)
             q = strchr(p, '\0');
         size_t len = q - p + 1;
-        if (len > INT_MAX) {
-            log_error("%s argument n=%zu length is too long", __func__, n);
-            return;
-        }
+        if (len > INT_MAX)
+            suicide("%s argument n=%zu length is too long", __func__, n);
         argv[n] = xmalloc(len);
         ssize_t snlen = snprintf(argv[n], len, "%.*s", (int)(len - 1), p);
-        if (snlen < 0 || (size_t)snlen >= len) {
-            log_error("%s: argument n=%zu would truncate.  Not execing.",
-                      __func__, n);
-            return;
-        }
+        if (snlen < 0 || (size_t)snlen >= len)
+            suicide("%s: argument n=%zu would truncate.  Not execing.",
+                    __func__, n);
     }
-
     execv(command, argv);
+    suicide("%s: execv(%s) failed: %s", __func__, command, strerror(errno));
 }

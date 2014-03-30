@@ -32,8 +32,8 @@
 #include <stdbool.h>
 
 void nk_fix_env(uid_t uid, bool chdir_home);
-// Not re-entrant or thread-safe.
-void nk_execute(const char *command, const char *args);
+void __attribute__((noreturn))
+    nk_execute(const char *command, const char *args) ;
 
 #endif
 
