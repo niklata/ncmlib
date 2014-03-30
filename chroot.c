@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <pwd.h>
 #include <grp.h>
 
@@ -38,12 +39,13 @@
 
 void imprison(const char *chroot_dir)
 {
-    if (chdir(chroot_dir)) {
-        log_line("Failed to chdir(%s)!", chroot_dir);
+    if (chroot(chroot_dir)) {
+        log_error("%s: chroot('%s') failed: %s", __func__, chroot_dir,
+                  strerror(errno));
         exit(EXIT_FAILURE);
     }
-    if (chroot(chroot_dir)) {
-        log_line("Failed to chroot(%s)!", chroot_dir);
+    if (chdir("/")) {
+        log_error("%s: chdir('/') failed: %s", __func__, strerror(errno));
         exit(EXIT_FAILURE);
     }
 }
@@ -51,28 +53,22 @@ void imprison(const char *chroot_dir)
 void drop_root(uid_t uid, gid_t gid)
 {
     if (uid == 0 || gid == 0) {
-        log_line("FATAL - drop_root: attempt to drop root to root?\n");
+        log_error("%s: attempt to drop root to root", __func__);
         exit(EXIT_FAILURE);
     }
 
-    if (getgid() == 0) {
-        if (setregid(gid, gid) == -1) {
-            log_line("FATAL - drop_root: failed to drop real gid == root!\n");
+    if (getgid() != gid) {
+        if (setgid(gid)) {
+            log_error("%s: setgid failed: %s", __func__, strerror(errno));
             exit(EXIT_FAILURE);
         }
     }
 
-    if (getuid() == 0) {
-        if (setreuid(uid, uid) == -1) {
-            log_line("FATAL - drop_root: failed to drop real uid == root!\n");
+    if (getuid() != uid) {
+        if (setuid(uid)) {
+            log_error("%s: setuid failed: %s", __func__, strerror(errno));
             exit(EXIT_FAILURE);
         }
-    }
-
-    /* be absolutely sure */
-    if (getgid() == 0 || getuid() == 0) {
-        log_line("FATAL - drop_root: tried to drop root, but still have root!\n");
-        exit(EXIT_FAILURE);
     }
 }
 
