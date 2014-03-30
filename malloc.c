@@ -32,20 +32,16 @@
 #include "nk/log.h"
 
 void *xmalloc(size_t size) {
-    void *ret;
-
-    ret = malloc(size);
-    if (ret == NULL)
-        suicide("FATAL - malloc() failed\n");
+    void *ret = malloc(size);
+    if (!ret)
+        suicide("%s: malloc failed", __func__);
     return ret;
 }
 
 void *xrealloc(void *ptr, size_t size)
 {
-    void *ret;
-
-    ret = realloc(ptr, size);
-    if (size && ret == NULL)
-        suicide("FATAL - realloc() failed\n");
+    void *ret = realloc(ptr, size);
+    if (size && !ret)
+        suicide("%s: realloc failed", __func__);
     return ret;
 }
