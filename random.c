@@ -56,11 +56,9 @@ static void nk_get_rnd_clk(char *seed, size_t len)
     struct timespec ts;
     for (size_t i = 0; i < len; ++i) {
         int r = clock_gettime(CLOCK_REALTIME, &ts);
-        if (r < 0) {
-            log_warning("%s: Could not call clock_gettime(CLOCK_REALTIME): %s",
-                        __func__, strerror(errno));
-            exit(EXIT_FAILURE);
-        }
+        if (r < 0)
+            suicide("%s: Could not call clock_gettime(CLOCK_REALTIME): %s",
+                    __func__, strerror(errno));
         char *p = (char *)&ts.tv_sec;
         char *q = (char *)&ts.tv_nsec;
         for (size_t j = 0; j < sizeof ts.tv_sec; ++j)

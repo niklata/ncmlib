@@ -8,14 +8,10 @@
 static void copy_cmdarg(char *dest, char *src, size_t destlen, char *argname)
 {
     ssize_t olen = snprintf(dest, destlen, "%s", src);
-    if (olen < 0) {
-        log_error("snprintf failed on %s; your system is broken?", argname);
-        exit(EXIT_FAILURE);
-    }
-    if ((size_t)olen >= destlen) {
-        log_error("snprintf would truncate %s arg; it's too long", argname);
-        exit(EXIT_FAILURE);
-    }
+    if (olen < 0)
+        suicide("snprintf failed on %s; your system is broken?", argname);
+    if ((size_t)olen >= destlen)
+        suicide("snprintf would truncate %s arg; it's too long", argname);
 }
 
 #endif /* NCMLIB_COPY_CMDARG_H_ */
