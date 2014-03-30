@@ -39,23 +39,14 @@
 #include "log.h"
 
 void write_pid(const char *file) {
-    FILE *f;
-    size_t written, len;
-    char buf[MAXLINE];
-
-    f = fopen(file, "w");
+    FILE *f = fopen(file, "w");
     if (!f)
         suicide("%s: fopen(%s) failed: %s", __func__, file, strerror(errno));
-
-    snprintf(buf, sizeof buf, "%i", (unsigned int)getpid());
-    len = strlen(buf);
-    written = 0;
-    while (written < len) {
-        written = fwrite(buf + written, 1, len - written, f);
-        if (ferror(f))
-            break;
-    }
-
+    pid_t pid = getpid();
+    int r = fprintf(f, "%u", pid);
+    if (r < 0)
+        suicide("%s: fprintf(%s, %u) failed: %s", __func__, file, pid,
+                strerror(errno));
     if (fclose(f))
         suicide("%s: fclose(%s) failed: %s", __func__, file, strerror(errno));
 }
@@ -63,14 +54,12 @@ void write_pid(const char *file) {
 /* Return 0 on success, -1 on failure. */
 int file_exists(const char *file, const char *mode)
 {
-    FILE *f;
-
     if (!file || !mode) {
         log_line("%s: coding bug - file or mode were NULL", __func__);
         return -1;
     }
 
-    f = fopen(file, mode);
+    FILE *f = fopen(file, mode);
     if (!f) {
         log_line("%s: fopen(%s, %o) failed: %s", __func__, file, mode,
                  strerror(errno));
