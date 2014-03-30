@@ -1,4 +1,4 @@
-/* chroot.h - include file for chroot.c
+/* privilege.h - uid/gid, chroot, and capability handling
  *
  * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -26,8 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NCM_CHROOT_H_
-#define NCM_CHROOT_H_
+#ifndef NCM_PRIVILEGE_H_
+#define NCM_PRIVILEGE_H_
 
 #include <unistd.h>
 

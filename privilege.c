@@ -1,4 +1,4 @@
-/* chroot.c - chroots jobs and drops privs
+/* privilege.c - uid/gid, chroot, and capability handling
  *
  * (c) 2005-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -39,7 +39,7 @@
 #include <sys/prctl.h>
 #endif
 
-#include "chroot.h"
+#include "privilege.h"
 #include "defines.h"
 #include "log.h"
 
