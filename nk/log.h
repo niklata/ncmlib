@@ -36,6 +36,7 @@ extern int gflags_detach;
 extern char *gflags_log_name;
 
 #define log_line(...) log_line_l(LOG_INFO, __VA_ARGS__)
+#define log_debug(...) log_line_l(LOG_DEBUG, __VA_ARGS__)
 #define log_warning(...) log_line_l(LOG_WARNING, __VA_ARGS__)
 #define log_error(...) log_line_l(LOG_ERR, __VA_ARGS__)
 
