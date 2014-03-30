@@ -30,8 +30,7 @@
 #include <strings.h>
 #include <stdarg.h>
 #include <stdlib.h>
-
-#include "log.h"
+#include "nk/log.h"
 
 /* global logging flags */
 int gflags_quiet = 0;

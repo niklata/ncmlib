@@ -47,9 +47,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "random.h"
-#include "log.h"
-#include "io.h"
+#include "nk/random.h"
+#include "nk/log.h"
+#include "nk/io.h"
 
 static void nk_get_rnd_clk(char *seed, size_t len)
 {

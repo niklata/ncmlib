@@ -38,10 +38,8 @@
 #include <sys/capability.h>
 #include <sys/prctl.h>
 #endif
-
-#include "privilege.h"
-#include "defines.h"
-#include "log.h"
+#include "nk/privilege.h"
+#include "nk/log.h"
 
 void nk_set_chroot(const char *chroot_dir)
 {

@@ -35,12 +35,13 @@
 #include <errno.h>
 #include <limits.h>
 #include <pwd.h>
+#include "nk/exec.h"
+#include "nk/malloc.h"
+#include "nk/xstrdup.h"
+#include "nk/log.h"
 
-#include "defines.h"
-#include "exec.h"
-#include "malloc.h"
-#include "xstrdup.h"
-#include "log.h"
+#define DEFAULT_PATH "/bin:/usr/bin:/usr/local/bin"
+#define MAX_ARGS 1024
 
 void nk_fix_env(uid_t uid, bool chdir_home)
 {

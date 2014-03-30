@@ -31,8 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "signals.h"
-#include "log.h"
+#include "nk/signals.h"
+#include "nk/log.h"
 
 void hook_signal(int signum, void (*fn)(int), int flags) {
   struct sigaction new_action;

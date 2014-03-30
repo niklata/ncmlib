@@ -33,10 +33,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "defines.h"
-#include "pidfile.h"
-#include "log.h"
+#include "nk/pidfile.h"
+#include "nk/log.h"
 
 void write_pid(const char *file) {
     FILE *f = fopen(file, "w");

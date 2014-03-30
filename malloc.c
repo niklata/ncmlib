@@ -28,8 +28,8 @@
  */
 
 #include <stdlib.h>
-#include "malloc.h"
-#include "log.h"
+#include "nk/malloc.h"
+#include "nk/log.h"
 
 void *xmalloc(size_t size) {
     void *ret;

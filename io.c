@@ -29,8 +29,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
-
-#include "io.h"
+#include "nk/io.h"
 
 /* returns -1 on error, >= 0 and equal to # chars read on success */
 int safe_read(int fd, char *buf, int len)

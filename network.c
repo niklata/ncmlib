@@ -36,9 +36,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <netdb.h>
-
-#include "network.h"
-#include "malloc.h"
+#include "nk/network.h"
+#include "nk/malloc.h"
 
 /**
  * Given a TCP socket, set that socket to non-blocking mode.

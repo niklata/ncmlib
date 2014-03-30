@@ -27,6 +27,9 @@
  */
 #ifndef NCMLIB_RANDOM__
 #define NCMLIB_RANDOM__
+
+#include <stdint.h>
+
 struct nk_random_state_u32 {
     uint32_t s1, s2, s3, s4;
 };

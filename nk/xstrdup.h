@@ -2,7 +2,7 @@
 #define NCMLIB_XSTRDUP_H_
 
 #include <string.h>
-#include "log.h"
+#include "nk/log.h"
 
 #define xstrdup(a) xstrdup_z_(a,__func__)
 static inline char *xstrdup_z_(const char *s, const char *fn)

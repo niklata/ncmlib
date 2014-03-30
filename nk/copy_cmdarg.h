@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "log.h"
+#include "nk/log.h"
 
 static void copy_cmdarg(char *dest, char *src, size_t destlen, char *argname)
 {
