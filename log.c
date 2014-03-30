@@ -64,7 +64,7 @@ void log_line_l(int level, const char *format, ...)
         log_stdio();
 }
 
-void suicide(const char *format, ...)
+void __attribute__((noreturn)) suicide(const char *format, ...)
 {
     va_list argp;
 

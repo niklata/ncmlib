@@ -40,7 +40,7 @@ extern char *gflags_log_name;
 #define log_error(...) log_line_l(LOG_ERR, __VA_ARGS__)
 
 void log_line_l(int level, const char *format, ...);
-void suicide(const char *format, ...);
+void __attribute__((noreturn)) suicide(const char *format, ...);
 
 #endif
 
