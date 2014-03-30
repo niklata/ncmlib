@@ -33,8 +33,8 @@
 
 void nk_set_chroot(const char *chroot_dir);
 void nk_set_uidgid(uid_t uid, gid_t gid);
-#ifdef NCM_USE_CAPABILITY
-void nk_set_capability(const char *captxt)
+#ifdef NK_USE_CAPABILITY
+void nk_set_capability(const char *captxt);
 #endif
 
 static inline void nk_drop_privs(uid_t uid, gid_t gid, const char *chroot_dir)

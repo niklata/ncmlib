@@ -37,7 +37,7 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <grp.h>
-#ifdef NCM_USE_CAPABILITY
+#ifdef NK_USE_CAPABILITY
 #include <sys/capability.h>
 #include <sys/prctl.h>
 #endif
@@ -65,7 +65,7 @@ void nk_set_uidgid(uid_t uid, gid_t gid)
         suicide("%s: failed because the OS or libc is broken", __func__);
 }
 
-#ifdef NCM_USE_CAPABILITY
+#ifdef NK_USE_CAPABILITY
 void nk_set_capability(const char *captxt)
 {
     if (!captxt)
