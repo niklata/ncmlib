@@ -68,16 +68,10 @@ void suicide(const char *format, ...)
 {
     va_list argp;
 
-    if (gflags_quiet)
-        goto out;
-
     if (gflags_detach)
         log_syslog(LOG_ERR);
-    else {
+    else
         log_stdio();
-        perror(NULL);
-    }
-out:
     exit(EXIT_FAILURE);
 }
 
