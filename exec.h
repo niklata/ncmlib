@@ -1,5 +1,4 @@
-/*
- * exec.h - functions to exec a job
+/* exec.h - functions to exec a job
  *
  * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -30,8 +29,11 @@
 #ifndef NCM_EXEC_H_
 #define NCM_EXEC_H_
 
-void ncm_fix_env(uid_t uid, int chdir_home);
-void ncm_execute(char *command, char *args);
+#include <stdbool.h>
+
+void nk_fix_env(uid_t uid, bool chdir_home);
+// Not re-entrant or thread-safe.
+void nk_execute(const char *command, const char *args);
 
 #endif
 

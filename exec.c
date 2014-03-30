@@ -1,5 +1,4 @@
-/*
- * exec.c - functions to exec a job
+/* exec.c - functions to exec a job
  *
  * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -28,40 +27,35 @@
  */
 
 #include <sys/types.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <limits.h>
 #include <pwd.h>
 
 #include "defines.h"
 #include "exec.h"
 #include "malloc.h"
+#include "xstrdup.h"
 #include "log.h"
 
-#ifndef HAVE_CLEARENV
-extern char **environ;
-#endif
-
-void ncm_fix_env(uid_t uid, int chdir_home)
+void nk_fix_env(uid_t uid, bool chdir_home)
 {
-    struct passwd *pw;
+    if (clearenv())
+        suicide("%s: clearenv failed: %s", __func__, strerror(errno));
+
+    struct passwd *pw = getpwuid(uid);
+    if (!pw)
+        suicide("%s: user uid %u does not exist.  Not execing.",
+                __func__, uid);
+
     char uids[20];
-
-#ifdef HAVE_CLEARENV
-    clearenv();
-#else
-    environ = NULL; /* clearenv isn't portable */
-#endif
-
-    pw = getpwuid(uid);
-
-    if (pw == NULL) {
-        log_line("User uid %i does not exist.  Not exec'ing.", uid);
-        exit(EXIT_FAILURE);
-    }
-
-    snprintf(uids, sizeof uids, "%i", uid);
+    ssize_t snlen = snprintf(uids, sizeof uids, "%i", uid);
+    if (snlen < 0 || (size_t)snlen <= sizeof uids)
+        suicide("%s: UID was truncated (%d).  Not execing.", __func__, snlen);
     if (setenv("UID", uids, 1))
         goto fail_fix_env;
 
@@ -78,69 +72,66 @@ void ncm_fix_env(uid_t uid, int chdir_home)
         goto fail_fix_env;
 
     if (chdir_home) {
-        if (chdir(pw->pw_dir)) {
-            log_line("Failed to chdir to uid %i's homedir.  Not exec'ing.", uid);
-            exit(EXIT_FAILURE);
-        }
+        if (chdir(pw->pw_dir))
+            suicide("%s: failed to chdir to uid %u's homedir.  Not execing.",
+                    __func__, uid);
     } else {
-        if (chdir("/")) {
-            log_line("Failed to chdir to root directory.  Not exec'ing.", uid);
-            exit(EXIT_FAILURE);
-        }
+        if (chdir("/"))
+            suicide("%s: failed to chdir to root directory.  Not execing.",
+                    __func__);
     }
 
     if (setenv("SHELL", pw->pw_shell, 1))
         goto fail_fix_env;
     if (setenv("PATH", DEFAULT_PATH, 1))
         goto fail_fix_env;
-
     return;
-
 fail_fix_env:
-
-    log_line("Failed to sanitize environment.  Not exec'ing.\n");
-    exit(EXIT_FAILURE);
+    suicide("%s: failed to sanitize environment.  Not execing.", __func__);
 }
 
-void ncm_execute(char *command, char *args)
+// Not re-entrant or thread-safe.
+void nk_execute(const char *command, const char *args)
 {
     static char *argv[MAX_ARGS];
-    static int n;
-    int m;
-    char *p, *q;
-    size_t len;
+    static size_t n;
 
     /* free memory used on previous execution */
-    for (m = 1; m < n; m++)
+    for (size_t m = 0; m < n; m++)
         free(argv[m]);
     n = 0;
 
-    if (command == NULL)
+    if (!command)
         return;
 
     /* strip the path from the command name and store in cmdname */
-    p = strrchr(command, '/');
-    if (p != NULL) {
-        argv[0] = ++p;
-    } else {
-        argv[0] = command;
-    }
+    const char *p = strrchr(command, '/');
+    argv[0] = xstrdup(p ? p + 1 : command);
 
     /* decompose args into argv */
     p = args;
     for (n = 1;; p = strchr(p, ' '), n++) {
-        if (p == NULL || n > (MAX_ARGS - 2)) {
+        if (!p || n > (MAX_ARGS - 2)) {
             argv[n] = NULL;
             break;
         }
         if (n != 1)
             p++; /* skip the space */
-        q = strchr(p, ' ');
-        if (q == NULL)
+        char *q = strchr(p, ' ');
+        if (!q)
             q = strchr(p, '\0');
-        len = q - p + 1;
+        size_t len = q - p + 1;
+        if (len > INT_MAX) {
+            log_error("%s argument n=%zu length is too long", __func__, n);
+            return;
+        }
         argv[n] = xmalloc(len);
-        snprintf(argv[n], len, "%s", p);
+        ssize_t snlen = snprintf(argv[n], len, "%.*s", (int)(len - 1), p);
+        if (snlen < 0 || (size_t)snlen >= len) {
+            log_error("%s: argument n=%zu would truncate.  Not execing.",
+                      __func__, n);
+            return;
+        }
     }
 
     execv(command, argv);
