@@ -36,6 +36,8 @@ void nk_set_uidgid(uid_t uid, gid_t gid);
 #ifdef NK_USE_CAPABILITY
 void nk_set_capability(const char *captxt);
 #endif
+uid_t nk_uidgidbyname(const char *username, gid_t *gid);
+gid_t nk_gidbyname(const char *groupname);
 
 static inline void nk_drop_privs(uid_t uid, gid_t gid, const char *chroot_dir)
 {
