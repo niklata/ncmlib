@@ -35,6 +35,7 @@
 /* global logging flags */
 int gflags_quiet = 0;
 int gflags_detach = 0;
+int gflags_debug = 0;
 char *gflags_log_name = NULL;
 
 #define log_syslog(level) do { \
