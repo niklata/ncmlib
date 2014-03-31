@@ -85,8 +85,6 @@ execute_process(
 endif()
 
 if (${OSNAME} STREQUAL "Linux")
-  message("ncmlib: Detected that the current host is a Linux system.")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLINUX")
   execute_process(
     COMMAND uname -r
     COMMAND tr "\n" " "

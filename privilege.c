@@ -40,10 +40,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <grp.h>
-#ifdef NK_USE_CAPABILITY
+#ifdef __linux__
 #include <sys/capability.h>
-#endif
-#if defined(NK_USE_CAPABILITY) || defined(NK_USE_NO_NEW_PRIVS)
 #include <sys/prctl.h>
 #endif
 #include "nk/privilege.h"
