@@ -100,63 +100,59 @@ void nk_set_capability(const char *captxt)
 }
 #endif
 
-uid_t nk_uidgidbyname(const char *username, gid_t *gid)
+int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid)
 {
-    assert(username);
+    if (!username)
+        return -1;
     struct passwd *pws = getpwnam(username);
-    if (pws) {
-        if (gid && *gid < 1)
-            *gid = pws->pw_gid;
-        return pws->pw_uid;
-    } else {
+    if (!pws) {
         for (size_t i = 0; username[i]; ++i) {
             if (!isdigit(username[i]))
-                goto fail;
+                return -1;
         }
         char *p;
         long lt = strtol(username, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
-            goto fail;
+            return -1;
         if (lt > UINT_MAX || lt < 0)
-            goto fail;
+            return -1;
         if (p == username)
-            goto fail;
-        uid_t uid = (uid_t)lt;
-        pws = getpwuid(uid);
-        if (pws) {
-            if (gid && *gid < 1)
-                *gid = pws->pw_gid;
-            return uid;
-        }
+            return -1;
+        pws = getpwuid((uid_t)lt);
+        if (!pws)
+            return -1;
     }
-  fail:
-    suicide("FATAL: Invalid user '%s' specified.", username);
+    if (gid)
+        *gid = pws->pw_gid;
+    if (uid)
+        *uid = pws->pw_uid;
+    return 0;
 }
 
-gid_t nk_gidbyname(const char *groupname)
+int nk_gidbyname(const char *groupname, gid_t *gid)
 {
-    assert(groupname);
+    if (!groupname)
+        return -1;
     struct group *grp = getgrnam(groupname);
-    if (grp)
-        return grp->gr_gid;
-    else {
+    if (!grp) {
         for (size_t i = 0; groupname[i]; ++i) {
             if (!isdigit(groupname[i]))
-                goto fail;
+                return -1;
         }
         char *p;
         long lt = strtol(groupname, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
-            goto fail;
+            return -1;
         if (lt > UINT_MAX || lt < 0)
-            goto fail;
+            return -1;
         if (p == groupname)
-            goto fail;
-        gid_t gid = (gid_t)lt;
-        grp = getgrgid(gid);
-        if (grp)
-            return gid;
+            return -1;
+        grp = getgrgid((gid_t)lt);
+        if (!grp)
+            return -1;
     }
-  fail:
-    suicide("FATAL: Invalid group '%s' specified.", groupname);
+    if (gid)
+        return grp->gr_gid;
+    return 0;
 }
+
