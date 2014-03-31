@@ -68,8 +68,19 @@ void nk_set_uidgid(uid_t uid, gid_t gid)
         suicide("%s: setresgid failed: %s", __func__, strerror(errno));
     if (setresuid(uid, uid, uid))
         suicide("%s: setresuid failed: %s", __func__, strerror(errno));
-    if (getgid() != gid || getuid() != uid)
-        suicide("%s: failed because the OS or libc is broken", __func__);
+    uid_t ruid, euid, suid;
+    if (getresuid(&ruid, &euid, &suid))
+        suicide("%s: getresuid failed: %s", __func__, strerror(errno));
+    if (ruid != uid || euid != uid || suid != uid)
+        suicide("%s: getresuid failed; the OS or libc is broken", __func__);
+    gid_t rgid, egid, sgid;
+    if (getresgid(&rgid, &egid, &sgid))
+        suicide("%s: getresgid failed: %s", __func__, strerror(errno));
+    if (rgid != gid || egid != gid || sgid != gid)
+        suicide("%s: getresgid failed; the OS or libc is broken", __func__);
+    if (setreuid(-1, 0) == 0)
+        suicide("%s: OS or libc broken; able to restore privilege after drop",
+                __func__);
 }
 
 #ifdef NK_USE_CAPABILITY
