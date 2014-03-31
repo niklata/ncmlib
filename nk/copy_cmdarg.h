@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include "nk/log.h"
 
-static void copy_cmdarg(char *dest, char *src, size_t destlen, char *argname)
+static inline void copy_cmdarg(char *dest, char *src, size_t destlen,
+                               char *argname)
 {
     ssize_t olen = snprintf(dest, destlen, "%s", src);
     if (olen < 0)
