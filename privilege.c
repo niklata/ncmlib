@@ -114,7 +114,7 @@ int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid)
         long lt = strtol(username, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
             return -1;
-        if (lt > UINT_MAX || lt < 0)
+        if (lt < 0 || lt > (long)UINT_MAX)
             return -1;
         if (p == username)
             return -1;
@@ -143,7 +143,7 @@ int nk_gidbyname(const char *groupname, gid_t *gid)
         long lt = strtol(groupname, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
             return -1;
-        if (lt > UINT_MAX || lt < 0)
+        if (lt < 0 || lt > (long)UINT_MAX)
             return -1;
         if (p == groupname)
             return -1;

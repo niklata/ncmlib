@@ -32,9 +32,10 @@
 #include "nk/io.h"
 
 /* returns -1 on error, >= 0 and equal to # chars read on success */
-int safe_read(int fd, char *buf, int len)
+ssize_t safe_read(int fd, char *buf, size_t len)
 {
-    int r, s = 0;
+    ssize_t r;
+    size_t s = 0;
     while (s < len) {
         r = read(fd, buf + s, len - s);
         if (r == 0)
@@ -53,9 +54,10 @@ int safe_read(int fd, char *buf, int len)
 }
 
 /* returns -1 on error, >= 0 and equal to # chars written on success */
-int safe_write(int fd, const char *buf, int len)
+ssize_t safe_write(int fd, const char *buf, size_t len)
 {
-    int r, s = 0;
+    ssize_t r;
+    size_t s = 0;
     while (s < len) {
         r = write(fd, buf + s, len - s);
         if (r == -1) {
@@ -70,10 +72,11 @@ int safe_write(int fd, const char *buf, int len)
 }
 
 /* returns -1 on error, >= 0 and equal to # chars written on success */
-int safe_sendto(int fd, const char *buf, int len, int flags,
+ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
                 const struct sockaddr *dest_addr, socklen_t addrlen)
 {
-    int r, s = 0;
+    ssize_t r;
+    size_t s = 0;
     while (s < len) {
         r = sendto(fd, buf + s, len - s, flags, dest_addr, addrlen);
         if (r == -1) {
