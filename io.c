@@ -40,7 +40,7 @@ ssize_t safe_read(int fd, char *buf, size_t len)
         r = read(fd, buf + s, len - s);
         if (r == 0)
             break;
-        if (r == -1) {
+        if (r < 0) {
             if (errno == EINTR)
                 continue;
             else if ((errno == EAGAIN || errno == EWOULDBLOCK) && s > 0)
@@ -60,7 +60,7 @@ ssize_t safe_write(int fd, const char *buf, size_t len)
     size_t s = 0;
     while (s < len) {
         r = write(fd, buf + s, len - s);
-        if (r == -1) {
+        if (r < 0) {
             if (errno == EINTR)
                 continue;
             else
@@ -79,7 +79,7 @@ ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
     size_t s = 0;
     while (s < len) {
         r = sendto(fd, buf + s, len - s, flags, dest_addr, addrlen);
-        if (r == -1) {
+        if (r < 0) {
             if (errno == EINTR)
                 continue;
             else
