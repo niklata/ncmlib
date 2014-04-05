@@ -63,6 +63,8 @@ ssize_t safe_write(int fd, const char *buf, size_t len)
         if (r < 0) {
             if (errno == EINTR)
                 continue;
+            else if ((errno == EAGAIN || errno == EWOULDBLOCK) && s > 0)
+                return s;
             else
                 return -1;
         }
@@ -82,6 +84,8 @@ ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
         if (r < 0) {
             if (errno == EINTR)
                 continue;
+            else if ((errno == EAGAIN || errno == EWOULDBLOCK) && s > 0)
+                return s;
             else
                 return -1;
         }
