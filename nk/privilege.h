@@ -32,18 +32,9 @@
 #include <unistd.h>
 
 void nk_set_chroot(const char *chroot_dir);
-void nk_set_uidgid(uid_t uid, gid_t gid);
-#ifdef NK_USE_CAPABILITY
-void nk_set_capability(const char *captxt);
-#endif
+void nk_set_uidgid(uid_t uid, gid_t gid, const char *captxt);
 int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid);
 int nk_gidbyname(const char *groupname, gid_t *gid);
-
-static inline void nk_drop_privs(uid_t uid, gid_t gid, const char *chroot_dir)
-{
-    nk_set_chroot(chroot_dir);
-    nk_set_uidgid(uid, gid);
-}
 
 #endif
 

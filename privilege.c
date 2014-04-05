@@ -56,12 +56,44 @@ void nk_set_chroot(const char *chroot_dir)
         suicide("%s: chdir('/') failed: %s", __func__, strerror(errno));
 }
 
-void nk_set_uidgid(uid_t uid, gid_t gid)
+#ifdef NK_USE_CAPABILITY
+static void nk_set_capability_prologue(const char *captxt)
 {
+    if (!captxt)
+        return;
+    if (prctl(PR_SET_KEEPCAPS, 1))
+        suicide("%s: prctl failed: %s", __func__, strerror(errno));
+}
+static void nk_set_capability_epilogue(const char *captxt)
+{
+    if (!captxt)
+        return;
+    cap_t caps = cap_from_text(captxt);
+    if (!caps)
+        suicide("%s: cap_from_text failed: %s", __func__, strerror(errno));
+    if (cap_set_proc(caps))
+        suicide("%s: cap_set_proc failed: %s", __func__, strerror(errno));
+    if (cap_free(caps))
+        suicide("%s: cap_free failed: %s", __func__, strerror(errno));
+}
+#else
+static void nk_set_capability_prologue(const char *captxt) { (void)captxt; }
+static void nk_set_capability_epilogue(const char *captxt) { (void)captxt; }
+#endif
+
 #ifdef NK_USE_NO_NEW_PRIVS
+static void nk_set_no_new_privs(void)
+{
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0))
         suicide("%s: prctl failed: %s", __func__, strerror(errno));
+}
+#else
+static void nk_set_no_new_privs(void) {}
 #endif
+
+void nk_set_uidgid(uid_t uid, gid_t gid, const char *captxt)
+{
+    nk_set_capability_prologue(captxt);
     if (setgroups(1, &gid))
         suicide("%s: setgroups failed: %s", __func__, strerror(errno));
     if (setresgid(gid, gid, gid))
@@ -81,24 +113,9 @@ void nk_set_uidgid(uid_t uid, gid_t gid)
     if (setreuid(-1, 0) == 0)
         suicide("%s: OS or libc broken; able to restore privilege after drop",
                 __func__);
+    nk_set_capability_epilogue(captxt);
+    nk_set_no_new_privs();
 }
-
-#ifdef NK_USE_CAPABILITY
-void nk_set_capability(const char *captxt)
-{
-    if (!captxt)
-        return;
-    if (prctl(PR_SET_KEEPCAPS, 1))
-        suicide("%s: prctl failed: %s", __func__, strerror(errno));
-    cap_t caps = cap_from_text(captxt);
-    if (!caps)
-        suicide("%s: cap_from_text failed: %s", __func__, strerror(errno));
-    if (cap_set_proc(caps))
-        suicide("%s: cap_set_proc failed: %s", __func__, strerror(errno));
-    if (cap_free(caps))
-        suicide("%s: cap_free failed: %s", __func__, strerror(errno));
-}
-#endif
 
 int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid)
 {
