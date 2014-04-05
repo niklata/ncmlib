@@ -94,3 +94,23 @@ ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
     return s;
 }
 
+ssize_t safe_recv(int fd, char *buf, size_t len, int flags)
+{
+    ssize_t r;
+    size_t s = 0;
+    while (s < len) {
+        r = recv(fd, buf + s, len - s, flags);
+        if (r == 0)
+            break;
+        if (r < 0) {
+            if (errno == EINTR)
+                continue;
+            else if ((errno == EAGAIN || errno == EWOULDBLOCK) && s > 0)
+                return s;
+            else
+                return -1;
+        }
+        s += r;
+    }
+    return s;
+}
