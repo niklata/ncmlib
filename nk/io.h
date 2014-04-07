@@ -36,5 +36,6 @@ ssize_t safe_write(int fd, const char *buf, size_t len);
 ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
                     const struct sockaddr *dest_addr, socklen_t addrlen);
 ssize_t safe_recv(int fd, char *buf, size_t len, int flags);
+ssize_t safe_recvmsg(int fd, struct msghdr *msg, int flags);
 
 #endif /* NCM_IO_H_ */

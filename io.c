@@ -75,7 +75,7 @@ ssize_t safe_write(int fd, const char *buf, size_t len)
 
 /* returns -1 on error, >= 0 and equal to # chars written on success */
 ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
-                const struct sockaddr *dest_addr, socklen_t addrlen)
+                    const struct sockaddr *dest_addr, socklen_t addrlen)
 {
     ssize_t r;
     size_t s = 0;
@@ -113,4 +113,14 @@ ssize_t safe_recv(int fd, char *buf, size_t len, int flags)
         s += r;
     }
     return s;
+}
+
+ssize_t safe_recvmsg(int fd, struct msghdr *msg, int flags)
+{
+    ssize_t r;
+  retry:
+    r = recvmsg(fd, msg, flags);
+    if (r < 0 && errno == EINTR)
+        goto retry;
+    return r;
 }
