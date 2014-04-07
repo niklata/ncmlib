@@ -57,28 +57,75 @@ void nk_set_chroot(const char *chroot_dir)
 }
 
 #ifdef NK_USE_CAPABILITY
-static void nk_set_capability_prologue(const char *captxt)
+static size_t nk_get_capability_vinfo(uint32_t *version)
 {
-    if (!captxt)
-        return;
+    assert(version);
+    struct __user_cap_header_struct hdr = { 0 };
+    if (capget(&hdr, NULL) < 0) {
+        if (errno != EINVAL)
+            suicide("%s: capget failed: %s", __func__, strerror(errno));
+    }
+    switch (hdr.version) {
+    case _LINUX_CAPABILITY_VERSION_1:
+         *version = _LINUX_CAPABILITY_VERSION_1;
+        return _LINUX_CAPABILITY_U32S_1;
+    case _LINUX_CAPABILITY_VERSION_2:
+         *version = _LINUX_CAPABILITY_VERSION_2;
+        return _LINUX_CAPABILITY_U32S_2;
+    default: log_warning("%s: unknown capability version %x, using %x",
+                         __func__, *version, _LINUX_CAPABILITY_VERSION_3);
+    case _LINUX_CAPABILITY_VERSION_3:
+         *version = _LINUX_CAPABILITY_VERSION_3;
+         return _LINUX_CAPABILITY_U32S_3;
+    }
+}
+static size_t nk_set_capability_prologue(const unsigned char *caps,
+                                         size_t caplen, uint32_t *cversion)
+{
+    assert(cversion);
+    if (!caps || !caplen)
+        return 0;
+    size_t csize = nk_get_capability_vinfo(cversion);
     if (prctl(PR_SET_KEEPCAPS, 1))
         suicide("%s: prctl failed: %s", __func__, strerror(errno));
+    return csize;
 }
-static void nk_set_capability_epilogue(const char *captxt)
+static void nk_set_capability_epilogue(const unsigned char *caps,
+                                       size_t caplen, uint32_t cversion,
+                                       size_t csize)
 {
-    if (!captxt)
+    if (!caps || !caplen)
         return;
-    cap_t caps = cap_from_text(captxt);
-    if (!caps)
-        suicide("%s: cap_from_text failed: %s", __func__, strerror(errno));
-    if (cap_set_proc(caps))
-        suicide("%s: cap_set_proc failed: %s", __func__, strerror(errno));
-    if (cap_free(caps))
-        suicide("%s: cap_free failed: %s", __func__, strerror(errno));
+    struct __user_cap_header_struct hdr = {
+        .version = cversion,
+        .pid = 0,
+    };
+    struct __user_cap_data_struct data[csize];
+    uint32_t mask[csize];
+    memset(mask, 0, sizeof mask);
+    for (size_t i = 0; i < caplen; ++i) {
+        size_t j = caps[i] / 32;
+        if (j >= csize)
+            suicide("%s: caps[%zu] == %u, which is >= %u and out of range",
+                    __func__, caps[i], csize * 32);
+        mask[j] |= CAP_TO_MASK(caps[i] - 32 * j);
+    }
+    for (size_t i = 0; i < csize; ++i) {
+        data[i].effective = mask[i];
+        data[i].permitted = mask[i];
+        data[i].inheritable = 0;
+    }
+    if (capset(&hdr, (cap_user_data_t)&data) < 0)
+        suicide("%s: capset failed: %s", __func__, strerror(errno));
 }
 #else
-static void nk_set_capability_prologue(const char *captxt) { (void)captxt; }
-static void nk_set_capability_epilogue(const char *captxt) { (void)captxt; }
+static size_t nk_set_capability_prologue(const unsigned char *caps,
+                                           size_t caplen, uint32_t *cversion)
+{ (void)caps; (void)caplen; (void)cversion; return 0; }
+static void nk_set_capability_epilogue(const unsigned char *caps,
+                                       size_t caplen, uint32_t cversion,
+                                       size_t csize)
+{ (void)caps; (void)caplen; (void)cversion; (void)csize; }
 #endif
 
 #ifdef NK_USE_NO_NEW_PRIVS
@@ -91,9 +138,11 @@ static void nk_set_no_new_privs(void)
 static void nk_set_no_new_privs(void) {}
 #endif
 
-void nk_set_uidgid(uid_t uid, gid_t gid, const char *captxt)
+void nk_set_uidgid(uid_t uid, gid_t gid, const unsigned char *caps,
+                   size_t caplen)
 {
-    nk_set_capability_prologue(captxt);
+    uint32_t cversion = 0;
+    size_t csize = nk_set_capability_prologue(caps, caplen, &cversion);
     if (setgroups(1, &gid))
         suicide("%s: setgroups failed: %s", __func__, strerror(errno));
     if (setresgid(gid, gid, gid))
@@ -113,7 +162,7 @@ void nk_set_uidgid(uid_t uid, gid_t gid, const char *captxt)
     if (setreuid(-1, 0) == 0)
         suicide("%s: OS or libc broken; able to restore privilege after drop",
                 __func__);
-    nk_set_capability_epilogue(captxt);
+    nk_set_capability_epilogue(caps, caplen, cversion, csize);
     nk_set_no_new_privs();
 }
 

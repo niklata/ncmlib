@@ -30,9 +30,13 @@
 #define NCM_PRIVILEGE_H_
 
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/capability.h>
+#endif
 
 void nk_set_chroot(const char *chroot_dir);
-void nk_set_uidgid(uid_t uid, gid_t gid, const char *captxt);
+void nk_set_uidgid(uid_t uid, gid_t gid, const unsigned char *caps,
+                   size_t caplen);
 int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid);
 int nk_gidbyname(const char *groupname, gid_t *gid);
 
