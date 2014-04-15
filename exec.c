@@ -126,5 +126,6 @@ nk_execute(const char *command, const char *args)
                     __func__, n);
     }
     execv(command, argv);
-    suicide("%s: execv(%s) failed: %s", __func__, command, strerror(errno));
+    log_error("%s: execv(%s) failed: %s", __func__, command, strerror(errno));
+    _Exit(EXIT_FAILURE);
 }
