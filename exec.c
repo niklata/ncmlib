@@ -55,7 +55,7 @@ void nk_fix_env(uid_t uid, bool chdir_home)
 
     char uids[20];
     ssize_t snlen = snprintf(uids, sizeof uids, "%i", uid);
-    if (snlen < 0 || (size_t)snlen <= sizeof uids)
+    if (snlen < 0 || (size_t)snlen >= sizeof uids)
         suicide("%s: UID was truncated (%d).  Not execing.", __func__, snlen);
     if (setenv("UID", uids, 1))
         goto fail_fix_env;
