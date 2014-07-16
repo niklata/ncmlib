@@ -19,14 +19,14 @@ static inline uint16_t net_checksum161c_foldcarry(uint32_t v)
 // unsigned overflow, which is a defined operation and is safe.  This limit
 // should not be an issue for IPv4 or IPv6 packet, which are limited to
 // at most 64k bytes.
-static uint16_t net_checksum161c(void *buf, size_t size)
+static uint16_t net_checksum161c(const void *buf, size_t size)
 {
     uint32_t sum = 0;
     int odd = size & 0x01;
     size_t i;
     size &= ~((size_t)0x01);
     size >>= 1;
-    uint8_t *b = buf;
+    uint8_t *b = (uint8_t *)buf;
     for (i = 0; i < size; ++i) {
         uint16_t hi = b[i*2];
         uint16_t lo = b[i*2+1];
