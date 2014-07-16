@@ -1,4 +1,4 @@
-/* random.h - Tausworthe non-cryptographic fast PRNG
+/* random.h - non-cryptographic fast PRNG
  *
  * (c) 2013-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -38,7 +38,7 @@ void nk_random_u32_init(struct nk_random_state_u32 *s);
 uint32_t nk_random_u32(struct nk_random_state_u32 *s);
 
 struct nk_random_state_u64 {
-    uint64_t s1, s2, s3, s4, s5;
+    uint64_t s1;
 };
 
 void nk_random_u64_init(struct nk_random_state_u64 *s);

@@ -1,4 +1,4 @@
-/* random.c - Tausworthe non-cryptographic fast PRNG
+/* random.c - non-cryptographic fast PRNG
  *
  * (c) 2013-2014 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
@@ -25,17 +25,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
-// This is a fast RNG that is unsuitable for cryptographic applications, but
-// is at least more consistent than using rand().
-//
-// For more details, see
-// P. L'Ecuyer, “Maximally Equidistributed Combined Tausworthe Generators”,
-// Mathematics of Computation, 65, 213 (1996), 203–213.
-//
-// Initial seed mixing is done by using a single step of a linear
-// congruential generator.  Parameters are taken from those commonly used
-// in rand() implementations.
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -104,6 +93,16 @@ static void nk_get_urandom_u64(uint64_t *seed)
     nk_get_urandom((char *)seed, sizeof *seed);
 }
 
+// 32-bit specific code implements the combined Tausworthe generator described
+// by L'Ecuyer.  It is a fast PRNG that produces results of good quality.
+//
+// For more details, see
+// P. L'Ecuyer, “Maximally Equidistributed Combined Tausworthe Generators”,
+// Mathematics of Computation, 65, 213 (1996), 203–213.
+//
+// Initial seed mixing is done by using a single step of a linear
+// congruential generator.  Parameters are taken from those commonly used
+// in rand() implementations.
 void nk_random_u32_init(struct nk_random_state_u32 *s)
 {
     uint32_t seed;
@@ -124,26 +123,22 @@ uint32_t nk_random_u32(struct nk_random_state_u32 *s)
     return s->s1 ^ s->s2 ^ s->s3 ^ s->s4;
 }
 
+// 64-bit specific code implements the xorshift64* generator described by
+// Vigna.  It is an extremely fast but high-quality PRNG.
+//
+// For more details, see
+// S. Vigna, "An experimental exploration of Marsaglia's xorshift generators,
+//            scrambled".
 void nk_random_u64_init(struct nk_random_state_u64 *s)
 {
-    uint64_t seed;
-    nk_get_urandom_u64(&seed);
-
-    s->s1 = seed * 1664525ul + (1013904223ul|0x10);
-    s->s2 = seed * 1103515245ul + (12345ul|0x1000);
-    s->s3 = seed * 214013ul + (2531011ul|0x100000);
-    s->s4 = seed * 2147483629ul + (2147483587ul|0x10000000);
-    s->s5 = seed * 6364136223846793005ul
-                   + (1442695040888963407ul|0x1000000000);
+    nk_get_urandom_u64(&s->s1);
 }
 
 uint64_t nk_random_u64(struct nk_random_state_u64 *s)
 {
-    s->s1 = ((s->s1 & 0xfffffffffffffffe) << 10) ^ (((s->s1 << 1)  ^ s->s1) >> 53);
-    s->s2 = ((s->s2 & 0xfffffffffffffe00) << 5)  ^ (((s->s2 << 24) ^ s->s2) >> 50);
-    s->s3 = ((s->s3 & 0xfffffffffffff000) << 29) ^ (((s->s3 << 3)  ^ s->s3) >> 23);
-    s->s4 = ((s->s4 & 0xfffffffffffe0000) << 23) ^ (((s->s4 << 5)  ^ s->s4) >> 24);
-    s->s5 = ((s->s5 & 0xffffffffff800000) << 8)  ^ (((s->s5 << 3)  ^ s->s5) >> 33);
-    return s->s1 ^ s->s2 ^ s->s3 ^ s->s4 ^ s->s5;
+    s->s1 ^= s->s1 >> 12;
+    s->s1 ^= s->s1 << 25;
+    s->s1 ^= s->s1 >> 27;
+    return s->s1 * 2685821657736338717ull;
 }
 
