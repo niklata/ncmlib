@@ -104,62 +104,53 @@ static void nk_get_urandom(char *seed, size_t len)
 }
 #endif
 
-static void nk_get_urandom_u32(uint32_t *seed)
-{
-    nk_get_urandom((char *)seed, sizeof *seed);
-}
-
-static void nk_get_urandom_u64(uint64_t *seed)
-{
-    nk_get_urandom((char *)seed, sizeof *seed);
-}
-
-// 32-bit specific code implements the combined Tausworthe generator described
-// by L'Ecuyer.  It is a fast PRNG that produces results of good quality.
-//
-// For more details, see
-// P. L'Ecuyer, “Maximally Equidistributed Combined Tausworthe Generators”,
-// Mathematics of Computation, 65, 213 (1996), 203–213.
-//
-// Initial seed mixing is done by using a single step of a linear
-// congruential generator.  Parameters are taken from those commonly used
-// in rand() implementations.
+// PCG XSL RR 64/32 LCG; period is 2^64
 void nk_random_u32_init(struct nk_random_state_u32 *s)
 {
-    uint32_t seed;
-    nk_get_urandom_u32(&seed);
-
-    s->s1 = seed * 1664525u + (1013904223u|0x10);
-    s->s2 = seed * 1103515245u + (12345u|0x1000);
-    s->s3 = seed * 214013u + (2531011u|0x100000);
-    s->s4 = seed * 2147483629u + (2147483587u|0x10000000);
+    nk_get_urandom((char *)&s->seed, sizeof s->seed);
 }
 
 uint32_t nk_random_u32(struct nk_random_state_u32 *s)
 {
-    s->s1 = ((s->s1 & 0xfffffffe) << 18) ^ (((s->s1 << 6)  ^ s->s1) >> 18);
-    s->s2 = ((s->s2 & 0xfffffff8) << 2)  ^ (((s->s2 << 2)  ^ s->s2) >> 27);
-    s->s3 = ((s->s3 & 0xfffffff0) << 7)  ^ (((s->s3 << 13) ^ s->s3) >> 21);
-    s->s4 = ((s->s4 & 0xffffff80) << 13) ^ (((s->s4 << 3)  ^ s->s4) >> 12);
-    return s->s1 ^ s->s2 ^ s->s3 ^ s->s4;
+    uint64_t os = s->seed;
+    s->seed = s->seed * 6364136223846793005ULL + 1442695040888963407ULL;
+    uint32_t xs = ((os ^ (os >> 18)) >> 27) & 0xffffffff;
+    uint32_t r = os >> 59;
+    return (xs >> r) | (xs << (32 - r));
 }
 
-// 64-bit specific code implements the xorshift64* generator described by
-// Vigna.  It is an extremely fast but high-quality PRNG.
-//
-// For more details, see
-// S. Vigna, "An experimental exploration of Marsaglia's xorshift generators,
-//            scrambled".
 void nk_random_u64_init(struct nk_random_state_u64 *s)
 {
-    nk_get_urandom_u64(&s->s1);
+    nk_get_urandom((char *)&s->seed, sizeof s->seed);
 }
 
+#ifndef NK_NO_ASM
+// PCG XSL RR 128/64 LCG
+// Should be more resistant to reversing the internal PRNG state to predict
+// future outputs, although it should not be used where cryptographic
+// security is required.
+extern uint64_t nk_pcg64_roundfn(uint64_t seed[2]);
 uint64_t nk_random_u64(struct nk_random_state_u64 *s)
 {
-    s->s1 ^= s->s1 >> 12;
-    s->s1 ^= s->s1 << 25;
-    s->s1 ^= s->s1 >> 27;
-    return s->s1 * 2685821657736338717ull;
+    return nk_pcg64_roundfn(s->seed);
 }
+#else
+// Two independent PCG XSL RR 64/32 LCG
+// Does not have the enhanced prediction resilience of the 128-bit PCG.
+uint64_t nk_random_u64(struct nk_random_state_u64 *s)
+{
+    uint64_t os0 = s->seed[0];
+    s->seed[0] = s->seed[0] * 6364136223846793005ULL + 1442695040888963407ULL;
+    uint64_t os1 = s->seed[1];
+    s->seed[1] = s->seed[1] * 6364136223846793005ULL + 1442695040888963407ULL;
+
+    uint32_t xs0 = ((os0 ^ (os0 >> 18)) >> 27) & 0xffffffff;
+    uint32_t r0 = os0 >> 59;
+    uint32_t xs1 = ((os1 ^ (os1 >> 18)) >> 27) & 0xffffffff;
+    uint32_t r1 = os1 >> 59;
+    uint32_t o0 = (xs0 >> r0) | (xs0 << (32 - r0));
+    uint32_t o1 = (xs1 >> r1) | (xs1 << (32 - r1));
+    return (uint64_t)o0 | ((uint64_t)o1 << 32);
+}
+#endif
 

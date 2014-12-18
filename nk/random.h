@@ -31,14 +31,14 @@
 #include <stdint.h>
 
 struct nk_random_state_u32 {
-    uint32_t s1, s2, s3, s4;
+    uint64_t seed;
 };
 
 void nk_random_u32_init(struct nk_random_state_u32 *s);
 uint32_t nk_random_u32(struct nk_random_state_u32 *s);
 
 struct nk_random_state_u64 {
-    uint64_t s1;
+    uint64_t seed[2];
 };
 
 void nk_random_u64_init(struct nk_random_state_u64 *s);

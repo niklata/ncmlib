@@ -109,7 +109,27 @@ if (${OSNAME} STREQUAL "Linux")
   endif()
 endif()
 
+execute_process(
+  COMMAND uname -m
+  COMMAND tr "\n" " "
+  COMMAND sed "s/ //"
+  OUTPUT_VARIABLE MACHINENAME
+  )
+
+if (${MACHINENAME} STREQUAL "x86_64")
+  message("Detected that the current host is x86_64.  Enabling x64 asm.")
+  file(GLOB ASM_OBJS "asm/x64-sysv/*.o")
+elseif ((${MACHINENAME} STREQUAL "i686") OR (${MACHINENAME} STREQUAL "i586") OR
+        (${MACHINENAME} STREQUAL "i486") OR (${MACHINENAME} STREQUAL "i386"))
+  message("Detected that the current host is x86.  Enabling x86 asm.")
+  file(GLOB ASM_OBJS "asm/x86-sysv/*.o")
+else()
+  message("Host machine type does not have optimized asm code.")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNK_NO_ASM")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNK_NO_ASM")
+endif()
 
 file(GLOB NCMLIB_SRCS "*.c")
 
-add_library(ncmlib ${NCMLIB_SRCS})
+add_library(ncmlib ${NCMLIB_SRCS} ${ASM_OBJS})
+
