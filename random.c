@@ -40,6 +40,26 @@
 #include "nk/log.h"
 #include "nk/io.h"
 
+#ifdef NK_USE_GETRANDOM_SYSCALL
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <asm-generic/unistd.h>
+#include <linux/random.h>
+static void nk_get_urandom(char *seed, size_t len)
+{
+    int err;
+retry:
+    //err = getrandom(seed, len, 0);
+    err = syscall(__NR_getrandom, seed, len, 0);
+    if (err < 0) {
+        switch (errno) {
+        case EINTR: goto retry; break;
+        default: suicide("%s: getrandom() failed: %s",
+                         __func__, strerror(errno));
+        }
+    }
+}
+#else
 static void nk_get_rnd_clk(char *seed, size_t len)
 {
     struct timespec ts;
@@ -82,6 +102,7 @@ static void nk_get_urandom(char *seed, size_t len)
                 __func__);
     nk_get_rnd_clk(seed, len);
 }
+#endif
 
 static void nk_get_urandom_u32(uint32_t *seed)
 {
