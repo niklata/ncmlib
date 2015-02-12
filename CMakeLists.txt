@@ -109,12 +109,17 @@ if (${OSNAME} STREQUAL "Linux")
   endif()
 endif()
 
-execute_process(
-  COMMAND uname -m
-  COMMAND tr "\n" " "
-  COMMAND sed "s/ //"
-  OUTPUT_VARIABLE MACHINENAME
-  )
+if ("$ENV{CROSSCOMPILE_MACHINENAME}" STREQUAL "")
+  execute_process(
+    COMMAND uname -m
+    COMMAND tr "\n" " "
+    COMMAND sed "s/ //"
+    OUTPUT_VARIABLE MACHINENAME
+    )
+else()
+  message("skipped machine detection; MACHINENAME is '$ENV{CROSSCOMPILE_MACHINENAME}'")
+  set(MACHINENAME $ENV{CROSSCOMPILE_MACHINENAME})
+endif()
 
 if (${MACHINENAME} STREQUAL "x86_64")
   message("Detected that the current host is x86_64.  Enabling x64 asm.")
