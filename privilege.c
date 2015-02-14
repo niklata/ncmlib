@@ -60,7 +60,8 @@ void nk_set_chroot(const char *chroot_dir)
 static size_t nk_get_capability_vinfo(uint32_t *version)
 {
     assert(version);
-    struct __user_cap_header_struct hdr = { 0 };
+    struct __user_cap_header_struct hdr;
+    memset(&hdr, 0, sizeof hdr);
     if (capget(&hdr, NULL) < 0) {
         if (errno != EINVAL)
             suicide("%s: capget failed: %s", __func__, strerror(errno));
