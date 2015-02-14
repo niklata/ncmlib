@@ -51,6 +51,7 @@ char *gflags_log_name = NULL;
     fprintf(stderr, "\n"); \
     va_end(argp); } while(0)
 
+__attribute__ ((format (printf, 2, 3)))
 void log_line_l(int level, const char *format, ...)
 {
     va_list argp;
@@ -64,6 +65,7 @@ void log_line_l(int level, const char *format, ...)
         log_stdio();
 }
 
+__attribute__ ((format (printf, 1, 2)))
 void __attribute__((noreturn)) suicide(const char *format, ...)
 {
     va_list argp;
