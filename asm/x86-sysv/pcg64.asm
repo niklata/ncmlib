@@ -72,7 +72,7 @@ mov [esp], eax
 mov eax, [edi+4]
 mul dword [esi]
 add eax, ecx
-mov [esp+4], eax ;; CH
+mov [esp+4], eax ;; HC
 adc edx, 0
 mov ecx, edx
 
@@ -85,7 +85,7 @@ adc ecx, edx
 mov eax, [edi+8]
 mul dword [esi]
 add eax, ecx
-mov [esp+8], eax ;; BH
+mov [esp+8], eax ;; HB
 adc edx, 0
 mov ecx, edx
 
@@ -103,7 +103,7 @@ adc ecx, edx
 mov eax, [edi+12]
 mul dword [esi]
 add eax, ecx
-mov [esp+12], eax ;; AH
+mov [esp+12], eax ;; HA
 
 mov eax, [edi+8]
 mul dword [esi+4]

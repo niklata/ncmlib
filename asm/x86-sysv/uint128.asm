@@ -33,28 +33,28 @@ ret
 
 ;;          A B C D
 ;;        * E F G H
-;;                DH
-;;              CH
+;;                HD
+;;              HC
 ;;              GD
-;;            BH
+;;            HB
 ;;            GC
 ;;            FD
-;;          AH
+;;          HA
 ;;          GB
 ;;          FC
 ;;          ED
 ;;        GA
 ;;        FB
 ;;        EC
-;;      DA
+;;      FA
 ;;      EB
 ;;  + EA
 ;; ----------------
 ;;
-;; 0 = DH
-;; 1 = CH + GD + 0_carry
-;; 2 = BH + GC + FD + 1_carry
-;; 3 = AH + GB + FC + ED + 2_carry
+;; 0 = HD
+;; 1 = HC + GD + 0_carry
+;; 2 = HB + GC + FD + 1_carry
+;; 3 = HA + GB + FC + ED + 2_carry
 
 ;; uses cdecl convention
 ;; dst can't alias a or b
@@ -84,7 +84,7 @@ mov [ecx], eax
 mov eax, [edi+4]
 mul dword [esi]
 add eax, ebx
-mov [ecx+4], eax ;; CH
+mov [ecx+4], eax ;; HC
 adc edx, 0
 mov ebx, edx
 
@@ -97,7 +97,7 @@ adc ebx, edx
 mov eax, [edi+8]
 mul dword [esi]
 add eax, ebx
-mov [ecx+8], eax ;; BH
+mov [ecx+8], eax ;; HB
 adc edx, 0
 mov ebx, edx
 
@@ -115,7 +115,7 @@ adc ebx, edx
 mov eax, [edi+12]
 mul dword [esi]
 add eax, ebx
-mov [ecx+12], eax ;; AH
+mov [ecx+12], eax ;; HA
 
 mov eax, [edi+8]
 mul dword [esi+4]
