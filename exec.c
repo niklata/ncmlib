@@ -1,6 +1,6 @@
 /* exec.c - functions to exec a job
  *
- * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,28 +104,31 @@ nk_execute(const char *command, const char *args)
     const char *p = strrchr(command, '/');
     argv[0] = xstrdup(p ? p + 1 : command);
 
-    /* decompose args into argv */
-    p = args;
-    for (n = 1;; p = strchr(p, ' '), n++) {
-        if (!p || n > (MAX_ARGS - 2)) {
-            argv[n] = NULL;
-            break;
+    if (args) {
+        /* decompose args into argv */
+        p = args;
+        for (n = 1;; p = strchr(p, ' '), n++) {
+            if (!p || n > (MAX_ARGS - 2)) {
+                argv[n] = NULL;
+                break;
+            }
+            if (n != 1)
+                p++; /* skip the space */
+            char *q = strchr(p, ' ');
+            if (!q)
+                q = strchr(p, '\0');
+            size_t len = q - p + 1;
+            if (len > INT_MAX)
+                suicide("%s argument n=%zu length is too long", __func__, n);
+            argv[n] = xmalloc(len);
+            ssize_t snlen = snprintf(argv[n], len, "%.*s", (int)(len - 1), p);
+            if (snlen < 0 || (size_t)snlen >= len)
+                suicide("%s: argument n=%zu would truncate.  Not execing.",
+                        __func__, n);
         }
-        if (n != 1)
-            p++; /* skip the space */
-        char *q = strchr(p, ' ');
-        if (!q)
-            q = strchr(p, '\0');
-        size_t len = q - p + 1;
-        if (len > INT_MAX)
-            suicide("%s argument n=%zu length is too long", __func__, n);
-        argv[n] = xmalloc(len);
-        ssize_t snlen = snprintf(argv[n], len, "%.*s", (int)(len - 1), p);
-        if (snlen < 0 || (size_t)snlen >= len)
-            suicide("%s: argument n=%zu would truncate.  Not execing.",
-                    __func__, n);
     }
     execv(command, argv);
     log_error("%s: execv(%s) failed: %s", __func__, command, strerror(errno));
     _Exit(EXIT_FAILURE);
 }
+
