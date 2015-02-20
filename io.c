@@ -1,6 +1,6 @@
 /* io.c - light wrappers for POSIX i/o functions
  *
- * (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2010-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 #include "nk/io.h"
 
 /* returns -1 on error, >= 0 and equal to # chars read on success */
-ssize_t safe_read(int fd, char *buf, size_t len)
+ssize_t safe_read(int fd, char buf[static 1], size_t len)
 {
     ssize_t r;
     size_t s = 0;
@@ -54,7 +54,7 @@ ssize_t safe_read(int fd, char *buf, size_t len)
 }
 
 /* returns -1 on error, >= 0 and equal to # chars written on success */
-ssize_t safe_write(int fd, const char *buf, size_t len)
+ssize_t safe_write(int fd, const char buf[static 1], size_t len)
 {
     ssize_t r;
     size_t s = 0;
@@ -74,7 +74,7 @@ ssize_t safe_write(int fd, const char *buf, size_t len)
 }
 
 /* returns -1 on error, >= 0 and equal to # chars written on success */
-ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
+ssize_t safe_sendto(int fd, const char buf[static 1], size_t len, int flags,
                     const struct sockaddr *dest_addr, socklen_t addrlen)
 {
     ssize_t r;
@@ -94,7 +94,7 @@ ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
     return s;
 }
 
-ssize_t safe_recv(int fd, char *buf, size_t len, int flags)
+ssize_t safe_recv(int fd, char buf[static 1], size_t len, int flags)
 {
     ssize_t r;
     size_t s = 0;
@@ -115,7 +115,7 @@ ssize_t safe_recv(int fd, char *buf, size_t len, int flags)
     return s;
 }
 
-ssize_t safe_recvmsg(int fd, struct msghdr *msg, int flags)
+ssize_t safe_recvmsg(int fd, struct msghdr msg[static 1], int flags)
 {
     ssize_t r;
   retry:
@@ -124,3 +124,4 @@ ssize_t safe_recvmsg(int fd, struct msghdr *msg, int flags)
         goto retry;
     return r;
 }
+

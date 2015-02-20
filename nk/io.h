@@ -1,6 +1,6 @@
 /* io.h - light wrappers for POSIX i/o functions
  *
- * (c) 2010-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2010-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,11 @@
 
 #include <sys/socket.h>
 
-ssize_t safe_read(int fd, char *buf, size_t len);
-ssize_t safe_write(int fd, const char *buf, size_t len);
-ssize_t safe_sendto(int fd, const char *buf, size_t len, int flags,
+ssize_t safe_read(int fd, char buf[static 1], size_t len);
+ssize_t safe_write(int fd, const char buf[static 1], size_t len);
+ssize_t safe_sendto(int fd, const char buf[static 1], size_t len, int flags,
                     const struct sockaddr *dest_addr, socklen_t addrlen);
-ssize_t safe_recv(int fd, char *buf, size_t len, int flags);
-ssize_t safe_recvmsg(int fd, struct msghdr *msg, int flags);
+ssize_t safe_recv(int fd, char buf[static 1], size_t len, int flags);
+ssize_t safe_recvmsg(int fd, struct msghdr msg[static 1], int flags);
 
 #endif /* NCM_IO_H_ */

@@ -1,6 +1,6 @@
 /* random.c - non-cryptographic fast PRNG
  *
- * (c) 2013-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2013-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #include <sys/syscall.h>
 #include <asm-generic/unistd.h>
 #include <linux/random.h>
-static void nk_get_urandom(char *seed, size_t len)
+static void nk_get_urandom(char seed[static 1], size_t len)
 {
     int err;
 retry:
@@ -60,7 +60,7 @@ retry:
     }
 }
 #else
-static void nk_get_rnd_clk(char *seed, size_t len)
+static void nk_get_rnd_clk(char seed[static 1], size_t len)
 {
     struct timespec ts;
     for (size_t i = 0; i < len; ++i) {
@@ -80,7 +80,7 @@ static void nk_get_rnd_clk(char *seed, size_t len)
     }
 }
 
-static void nk_get_urandom(char *seed, size_t len)
+static void nk_get_urandom(char seed[static 1], size_t len)
 {
     int fd = open("/dev/urandom", O_RDONLY);
     if (fd >= 0) {
@@ -105,12 +105,12 @@ static void nk_get_urandom(char *seed, size_t len)
 #endif
 
 // PCG XSL RR 64/32 LCG; period is 2^64
-void nk_random_u32_init(struct nk_random_state_u32 *s)
+void nk_random_u32_init(struct nk_random_state_u32 s[static 1])
 {
     nk_get_urandom((char *)&s->seed, sizeof s->seed);
 }
 
-uint32_t nk_random_u32(struct nk_random_state_u32 *s)
+uint32_t nk_random_u32(struct nk_random_state_u32 s[static 1])
 {
     uint64_t os = s->seed;
     s->seed = s->seed * 6364136223846793005ULL + 1442695040888963407ULL;
@@ -119,7 +119,7 @@ uint32_t nk_random_u32(struct nk_random_state_u32 *s)
     return (xs >> r) | (xs << (32 - r));
 }
 
-void nk_random_u64_init(struct nk_random_state_u64 *s)
+void nk_random_u64_init(struct nk_random_state_u64 s[static 1])
 {
     nk_get_urandom((char *)&s->seed, sizeof s->seed);
 }
@@ -130,14 +130,14 @@ void nk_random_u64_init(struct nk_random_state_u64 *s)
 // future outputs, although it should not be used where cryptographic
 // security is required.
 extern uint64_t nk_pcg64_roundfn(uint64_t seed[2]);
-uint64_t nk_random_u64(struct nk_random_state_u64 *s)
+uint64_t nk_random_u64(struct nk_random_state_u64 s[static 1])
 {
     return nk_pcg64_roundfn(s->seed);
 }
 #else
 // Two independent PCG XSL RR 64/32 LCG
 // Does not have the enhanced prediction resilience of the 128-bit PCG.
-uint64_t nk_random_u64(struct nk_random_state_u64 *s)
+uint64_t nk_random_u64(struct nk_random_state_u64 s[static 1])
 {
     uint64_t os0 = s->seed[0];
     s->seed[0] = s->seed[0] * 6364136223846793005ULL + 1442695040888963407ULL;

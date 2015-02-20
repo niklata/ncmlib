@@ -1,6 +1,6 @@
 /* pidfile.c - process id file functions
  *
- * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #include "nk/pidfile.h"
 #include "nk/log.h"
 
-void write_pid(const char *file) {
+void write_pid(const char file[static 1]) {
     FILE *f = fopen(file, "w");
     if (!f)
         suicide("%s: fopen(%s) failed: %s", __func__, file, strerror(errno));
@@ -50,13 +50,8 @@ void write_pid(const char *file) {
 }
 
 /* Return 0 on success, -1 on failure. */
-int file_exists(const char *file, const char *mode)
+int file_exists(const char file[static 1], const char mode[static 1])
 {
-    if (!file || !mode) {
-        log_line("%s: coding bug - file or mode were NULL", __func__);
-        return -1;
-    }
-
     FILE *f = fopen(file, mode);
     if (!f) {
         log_line("%s: fopen(%s, %o) failed: %s", __func__, file, mode,

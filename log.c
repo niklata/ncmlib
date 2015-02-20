@@ -1,6 +1,6 @@
 /* log.c - simple logging support
  *
- * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ char *gflags_log_name = NULL;
     va_end(argp); } while(0)
 
 __attribute__ ((format (printf, 2, 3)))
-void log_line_l(int level, const char *format, ...)
+void log_line_l(int level, const char format[static 1], ...)
 {
     va_list argp;
 
@@ -66,7 +66,7 @@ void log_line_l(int level, const char *format, ...)
 }
 
 __attribute__ ((format (printf, 1, 2)))
-void __attribute__((noreturn)) suicide(const char *format, ...)
+void __attribute__((noreturn)) suicide(const char format[static 1], ...)
 {
     va_list argp;
 

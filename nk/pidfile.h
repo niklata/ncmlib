@@ -1,6 +1,6 @@
 /* pidfile.h - process id file functions
  *
- * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2015 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
 #ifndef NCM_PIDFILE_H_
 #define NCM_PIDFILE_H_
 
-void write_pid(const char *file);
-int file_exists(const char *file, const char *mode);
+void write_pid(const char file[static 1]);
+int file_exists(const char file[static 1], const char mode[static 1]);
 
 #endif
 
