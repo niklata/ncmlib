@@ -29,8 +29,8 @@
 #ifndef NCM_PIDFILE_H_
 #define NCM_PIDFILE_H_
 
-void write_pid(const char file[static 1]);
-int file_exists(const char file[static 1], const char mode[static 1]);
+void write_pid(const char * const file);
+int file_exists(const char * const file, const char * const mode);
 
 #endif
 

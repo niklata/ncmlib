@@ -41,8 +41,8 @@ extern char *gflags_log_name;
 #define log_warning(...) log_line_l(LOG_WARNING, __VA_ARGS__)
 #define log_error(...) log_line_l(LOG_ERR, __VA_ARGS__)
 
-void log_line_l(int level, const char format[static 1], ...);
-void __attribute__((noreturn)) suicide(const char format[static 1], ...);
+void log_line_l(int level, const char *format, ...);
+void __attribute__((noreturn)) suicide(const char *format, ...);
 
 #endif
 
