@@ -95,36 +95,57 @@ void __attribute__((noreturn))
 nk_execute(const char *command, const char *args)
 {
     char *argv[MAX_ARGS];
-    size_t n;
+    size_t curv = 0;
 
     if (!command)
-        exit(EXIT_SUCCESS);
+        _Exit(EXIT_SUCCESS);
 
-    /* strip the path from the command name and store in cmdname */
+    // strip the path from the command name and set argv[0]
     const char *p = strrchr(command, '/');
-    argv[0] = xstrdup(p ? p + 1 : command);
+    argv[curv] = xstrdup(p ? p + 1 : command);
+    argv[++curv] = NULL;
 
     if (args) {
-        /* decompose args into argv */
         p = args;
-        for (n = 1;; p = strchr(p, ' '), n++) {
-            if (!p || n > (MAX_ARGS - 2)) {
-                argv[n] = NULL;
-                break;
+        const char *q = args;
+        bool squote = false, dquote = false, atend = false;
+        for (;; ++p) {
+            switch (*p) {
+            default: continue;
+            case '\0':
+                 atend = true;
+                 goto endarg;
+            case ' ':
+                if (!squote && !dquote)
+                    goto endarg;
+                continue;
+            case '\'':
+                if (!dquote)
+                    squote = !squote;
+                continue;
+            case '"':
+                if (!squote)
+                    dquote = !dquote;
+                continue;
             }
-            if (n != 1)
-                p++; /* skip the space */
-            char *q = strchr(p, ' ');
-            if (!q)
-                q = strchr(p, '\0');
-            size_t len = q - p + 1;
-            if (len > INT_MAX)
-                suicide("%s argument n=%zu length is too long", __func__, n);
-            argv[n] = xmalloc(len);
-            ssize_t snlen = snprintf(argv[n], len, "%.*s", (int)(len - 1), p);
-            if (snlen < 0 || (size_t)snlen >= len)
-                suicide("%s: argument n=%zu would truncate.  Not execing.",
-                        __func__, n);
+endarg:
+            {
+                // Push an argument.
+                size_t len = p - q + 1;
+                if (len > 1) {
+                    if (len > INT_MAX)
+                        suicide("%s argument n=%zu length is too long", __func__, curv);
+                    argv[curv] = xmalloc(len);
+                    ssize_t snlen = snprintf(argv[curv], len, "%.*s", (int)(len - 1), q);
+                    if (snlen < 0 || (size_t)snlen >= len)
+                        suicide("%s: argument n=%zu would truncate.  Not execing.",
+                                __func__, curv);
+                    q = p + 1;
+                    argv[++curv] = NULL;
+                }
+                if (atend || curv >= (MAX_ARGS - 1))
+                    break;
+            }
         }
     }
     execv(command, argv);
