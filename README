@@ -1,13 +1,12 @@
-ncmlib - UNIX C utility library for common functions
-(C) 2003-2015 Nicholas J. Kain.  Licensed under 2-clause BSD.
+ncmlib - POSIX and Linux C utility library for common functions
+(C) 2010-2015 Nicholas J. Kain.  Licensed under 2-clause BSD.
 
 INTRODUCTION
 ------------
 
-This library is used by many of my programs.  For most of them,
-it is statically linked, and should be extracted (or linked) to
-a ncmlib subdirectory in the program source directory before
-building.
+This library is used by many of my programs.  It is statically linked, and
+should be extracted to a ncmlib subdirectory in the program source directory
+before building.
 
 OVERVIEW
 --------
