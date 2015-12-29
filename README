@@ -1,0 +1,26 @@
+ncmlib - UNIX C utility library for common functions
+(C) 2003-2015 Nicholas J. Kain.  Licensed under 2-clause BSD.
+
+INTRODUCTION
+------------
+
+This library is used by many of my programs.  For most of them,
+it is statically linked, and should be extracted (or linked) to
+a ncmlib subdirectory in the program source directory before
+building.
+
+OVERVIEW
+--------
+
+exec         =>       Creation of subprocesses
+io           =>       Wrappers for low-level i/o functions
+log          =>       Logging to stdio or syslog
+malloc       =>       Allocate-or-die wrappers
+net_checksum =>       IP checksum functions
+network      =>       (obsolete) socket API wrappers
+pidfile      =>       Pidfile creation
+privilege    =>       Drop uid/gid/capabilities securely
+random       =>       PRNG, uses PCG (asm on x86/x86-64)
+seccomp_bpf  =>       Wrappers for Linux seccomp syscall restriction
+signals      =>       Wrappers for signal hooks
+
