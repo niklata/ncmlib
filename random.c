@@ -1,6 +1,6 @@
 /* random.c - non-cryptographic fast PRNG
  *
- * (c) 2013-2015 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2013-2016 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,29 +45,36 @@
 #include <sys/syscall.h>
 #include <asm-generic/unistd.h>
 #include <linux/random.h>
-static void nk_get_urandom(char seed[static 1], size_t len)
+static bool nk_getrandom(char seed[static 1], size_t len)
 {
-    int err;
+    int r;
 retry:
-    //err = getrandom(seed, len, 0);
-    err = syscall(__NR_getrandom, seed, len, 0);
-    if (err < 0) {
-        switch (errno) {
-        case EINTR: goto retry; break;
-        default: suicide("%s: getrandom() failed: %s",
-                         __func__, strerror(errno));
-        }
+    //r = getrandom(seed, len, 0);
+    r = syscall(__NR_getrandom, seed, len, 0);
+    if (r < 0) {
+        if (errno == EINTR)
+            goto retry;
+        log_warning("%s: getrandom() failed: %s", __func__, strerror(errno));
+        return false;
     }
+    return true;
 }
 #else
-static void nk_get_rnd_clk(char seed[static 1], size_t len)
+static bool nk_getrandom(char seed[static 1], size_t len)
+{
+    return false;
+}
+#endif
+static bool nk_get_rnd_clk(char seed[static 1], size_t len)
 {
     struct timespec ts;
     for (size_t i = 0; i < len; ++i) {
         int r = clock_gettime(CLOCK_REALTIME, &ts);
-        if (r < 0)
-            suicide("%s: Could not call clock_gettime(CLOCK_REALTIME): %s",
-                    __func__, strerror(errno));
+        if (r < 0) {
+            log_warning("%s: Could not call clock_gettime(CLOCK_REALTIME): %s",
+                        __func__, strerror(errno));
+            return false;
+        }
         char *p = (char *)&ts.tv_sec;
         char *q = (char *)&ts.tv_nsec;
         for (size_t j = 0; j < sizeof ts.tv_sec; ++j)
@@ -78,36 +85,45 @@ static void nk_get_rnd_clk(char seed[static 1], size_t len)
         static const struct timespec st = { .tv_sec=0, .tv_nsec=1 };
         nanosleep(&st, NULL);
     }
+    return true;
 }
 
-static void nk_get_urandom(char seed[static 1], size_t len)
+static bool nk_get_urandom(char seed[static 1], size_t len)
 {
     int fd = open("/dev/urandom", O_RDONLY);
-    if (fd >= 0) {
-        int r = safe_read(fd, seed, len);
-        if (r < 0) {
-            log_warning("%s: Could not read /dev/urandom: %s",
-                        __func__, strerror(errno));
-            goto fail;
-        }
-    } else {
+    if (fd < 0) {
         log_warning("%s: Could not open /dev/urandom: %s", __func__,
                     strerror(errno));
-        goto fail;
+        return false;
+    }
+    bool ret = true;
+    int r = safe_read(fd, seed, len);
+    if (r < 0) {
+        ret = false;
+        log_warning("%s: Could not read /dev/urandom: %s",
+                    __func__, strerror(errno));
     }
     close(fd);
-    return;
-  fail:
+    return ret;
+}
+
+static void nk_get_hwrng(char seed[static 1], size_t len)
+{
+    if (nk_getrandom(seed, len))
+        return;
+    if (nk_get_urandom(seed, len))
+        return;
     log_warning("%s: Seeding PRNG via system clock.  May be predictable.",
                 __func__);
-    nk_get_rnd_clk(seed, len);
+    if (nk_get_rnd_clk(seed, len))
+        return;
+    suicide("%s: All methods to seed PRNG failed.  Exiting.", __func__);
 }
-#endif
 
 // PCG XSL RR 64/32 LCG; period is 2^64
 void nk_random_u32_init(struct nk_random_state_u32 s[static 1])
 {
-    nk_get_urandom((char *)&s->seed, sizeof s->seed);
+    nk_get_hwrng((char *)&s->seed, sizeof s->seed);
 }
 
 uint32_t nk_random_u32(struct nk_random_state_u32 s[static 1])
@@ -121,7 +137,7 @@ uint32_t nk_random_u32(struct nk_random_state_u32 s[static 1])
 
 void nk_random_u64_init(struct nk_random_state_u64 s[static 1])
 {
-    nk_get_urandom((char *)&s->seed, sizeof s->seed);
+    nk_get_hwrng((char *)&s->seed, sizeof s->seed);
 }
 
 #ifndef NK_NO_ASM
