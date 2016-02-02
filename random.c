@@ -41,21 +41,25 @@
 #include "nk/io.h"
 
 #ifdef NK_USE_GETRANDOM_SYSCALL
-#include <unistd.h>
 #include <sys/syscall.h>
-#include <asm-generic/unistd.h>
 #include <linux/random.h>
 static bool nk_getrandom(char seed[static 1], size_t len)
 {
-    int r;
-retry:
-    //r = getrandom(seed, len, 0);
-    r = syscall(__NR_getrandom, seed, len, 0);
-    if (r < 0) {
-        if (errno == EINTR)
-            goto retry;
-        log_warning("%s: getrandom() failed: %s", __func__, strerror(errno));
-        return false;
+    size_t fetched = 0;
+    while (fetched < len) {
+        int r = syscall(SYS_getrandom, seed + fetched, len - fetched, 0);
+        if (r <= 0) {
+            if (r == 0) {
+                // Failsafe to guard against infinite loops.
+                log_warning("%s: getrandom() returned no entropy", __func__);
+                return false;
+            }
+            if (errno == EINTR)
+                continue;
+            log_warning("%s: getrandom() failed: %s", __func__, strerror(errno));
+            return false;
+        }
+        fetched += r;
     }
     return true;
 }
