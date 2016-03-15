@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.5)
 ####################################
 
 # Computes the realtionship between two version strings.  A version
@@ -134,6 +135,7 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNK_NO_ASM")
 endif()
 
+include_directories("${CMAKE_SOURCE_DIR}")
 file(GLOB NCMLIB_SRCS "*.c")
 
 add_library(ncmlib ${NCMLIB_SRCS} ${ASM_OBJS})
