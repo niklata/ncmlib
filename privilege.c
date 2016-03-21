@@ -159,7 +159,7 @@ void nk_set_uidgid(uid_t uid, gid_t gid, const unsigned char *caps,
         suicide("%s: getresgid failed: %s", __func__, strerror(errno));
     if (rgid != gid || egid != gid || sgid != gid)
         suicide("%s: getresgid failed; the OS or libc is broken", __func__);
-    if (setreuid(-1, 0) == 0)
+    if (uid && setreuid(-1, 0) == 0)
         suicide("%s: OS or libc broken; able to restore privilege after drop",
                 __func__);
     nk_set_capability_epilogue(caps, caplen, cversion, csize);
