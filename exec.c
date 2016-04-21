@@ -37,6 +37,7 @@
 #include <pwd.h>
 #include "nk/exec.h"
 
+#define DEFAULT_ROOT_PATH "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 #define DEFAULT_PATH "/bin:/usr/bin:/usr/local/bin"
 #define MAX_ARGS 256
 #define MAX_ARGBUF 4096
@@ -83,7 +84,7 @@ int nk_generate_env(uid_t uid, const char *chroot_path, char *env[], size_t envl
     NK_GEN_ENV("LOGNAME=%s", pw->pw_name);
     NK_GEN_ENV("HOME=%s", pw->pw_dir);
     NK_GEN_ENV("SHELL=%s", pw->pw_shell);
-    NK_GEN_ENV("PATH=%s", DEFAULT_PATH);
+    NK_GEN_ENV("PATH=%s", uid > 0 ? DEFAULT_PATH : DEFAULT_ROOT_PATH);
     NK_GEN_ENV("PWD=%s", !chroot_path ? pw->pw_dir : "/");
     if (chroot_path && chroot(chroot_path)) return -4;
     if (chdir(chroot_path ? chroot_path : "/")) return -4;
