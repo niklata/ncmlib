@@ -1,6 +1,6 @@
 /* exec.h - functions to exec a job
  *
- * (c) 2003-2014 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2016 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,11 +29,10 @@
 #ifndef NCM_EXEC_H_
 #define NCM_EXEC_H_
 
-#include <stdbool.h>
-
-void nk_fix_env(uid_t uid, bool chdir_home);
+int nk_generate_env(uid_t uid, const char *chroot_path, char *env[], size_t envlen,
+                    char *envbuf, size_t envbuflen);
 void __attribute__((noreturn))
-    nk_execute(const char *command, const char *args) ;
+    nk_execute(const char *command, const char *args, char * const envp[]) ;
 
 #endif
 

@@ -1,6 +1,6 @@
 /* exec.c - functions to exec a job
  *
- * (c) 2003-2015 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2003-2016 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,74 +36,93 @@
 #include <limits.h>
 #include <pwd.h>
 #include "nk/exec.h"
-#include "nk/malloc.h"
-#include "nk/xstrdup.h"
-#include "nk/log.h"
 
 #define DEFAULT_PATH "/bin:/usr/bin:/usr/local/bin"
-#define MAX_ARGS 1024
+#define MAX_ARGS 256
+#define MAX_ARGBUF 4096
 
-void nk_fix_env(uid_t uid, bool chdir_home)
+#define NK_GEN_ENV(GEN_STR, ...) do { \
+        if (env_offset >= envlen) return -3; \
+        ssize_t snlen = snprintf(envbuf, envbuflen, GEN_STR "0", __VA_ARGS__); \
+        if (snlen < 0 || (size_t)snlen >= envbuflen) return -2; \
+        if (snlen > 0) envbuf[snlen-1] = 0; \
+        env[env_offset++] = envbuf; envbuf += snlen; envbuflen -= snlen; \
+    } while (0)
+
+/*
+ * uid: userid of the user account that the environment will constructed for
+ * chroot_path: path where the environment will be chrooted or NULL if no chroot
+ * env: array of character pointers that will be filled in with the new environment
+ * envlen: number of character pointers available in env; a terminal '0' ptr must be available
+ * envbuf: character buffer that will be used for storing state associated with env
+ * envbuflen: number of available characters in envbuf for use
+ *
+ * returns:
+ * 0 on success
+ * -1 if an account for uid does not exist
+ * -2 if there is not enough space in envbuf for the generated environment
+ * -3 if there is not enough space in env for the generated environment
+ * -4 if chdir to homedir or rootdir failed
+ */
+int nk_generate_env(uid_t uid, const char *chroot_path, char *env[], size_t envlen,
+                    char *envbuf, size_t envbuflen)
 {
-    if (clearenv())
-        suicide("%s: clearenv failed: %s", __func__, strerror(errno));
+    char pw_strs[1024];
+    struct passwd pw_s;
+    struct passwd *pw;
+    int pwr = getpwuid_r(uid, &pw_s, pw_strs, sizeof pw_strs, &pw);
+    if (pwr || !pw) return -1;
 
-    struct passwd *pw = getpwuid(uid);
-    if (!pw)
-        suicide("%s: user uid %u does not exist.  Not execing.",
-                __func__, uid);
+    size_t env_offset = 0;
+    if (envlen-- < 1)// So we don't have to account for the terminal NULL
+        return -3;
 
-    char uids[20];
-    ssize_t snlen = snprintf(uids, sizeof uids, "%i", uid);
-    if (snlen < 0 || (size_t)snlen >= sizeof uids)
-        suicide("%s: UID was truncated (%d).  Not execing.", __func__, snlen);
-    if (setenv("UID", uids, 1))
-        goto fail_fix_env;
+    NK_GEN_ENV("UID=%i", uid);
+    NK_GEN_ENV("USER=%s", pw->pw_name);
+    NK_GEN_ENV("USERNAME=%s", pw->pw_name);
+    NK_GEN_ENV("LOGNAME=%s", pw->pw_name);
+    NK_GEN_ENV("HOME=%s", pw->pw_dir);
+    NK_GEN_ENV("SHELL=%s", pw->pw_shell);
+    NK_GEN_ENV("PATH=%s", DEFAULT_PATH);
+    NK_GEN_ENV("PWD=%s", !chroot_path ? pw->pw_dir : "/");
+    if (chroot_path && chroot(chroot_path)) return -4;
+    if (chdir(chroot_path ? chroot_path : "/")) return -4;
 
-    if (setenv("USER", pw->pw_name, 1))
-        goto fail_fix_env;
-    if (setenv("USERNAME", pw->pw_name, 1))
-        goto fail_fix_env;
-    if (setenv("LOGNAME", pw->pw_name, 1))
-        goto fail_fix_env;
-
-    if (setenv("HOME", pw->pw_dir, 1))
-        goto fail_fix_env;
-    if (setenv("PWD", pw->pw_dir, 1))
-        goto fail_fix_env;
-
-    if (chdir_home) {
-        if (chdir(pw->pw_dir))
-            suicide("%s: failed to chdir to uid %u's homedir.  Not execing.",
-                    __func__, uid);
-    } else {
-        if (chdir("/"))
-            suicide("%s: failed to chdir to root directory.  Not execing.",
-                    __func__);
-    }
-
-    if (setenv("SHELL", pw->pw_shell, 1))
-        goto fail_fix_env;
-    if (setenv("PATH", DEFAULT_PATH, 1))
-        goto fail_fix_env;
-    return;
-fail_fix_env:
-    suicide("%s: failed to sanitize environment.  Not execing.", __func__);
+    env[env_offset] = 0;
+    return 0;
 }
 
+#define NK_GEN_ARG(GEN_STR, ...) do { \
+        ssize_t snlen = snprintf(argbuf, argbuflen, GEN_STR "0", __VA_ARGS__); \
+        if (snlen < 0 || (size_t)snlen >= argbuflen) { \
+            const char errstr[] = "nk_execute: constructing argument list failed\n"; \
+            write(STDERR_FILENO, errstr, sizeof errstr); \
+            _Exit(EXIT_FAILURE); \
+        } \
+        if (snlen > 0) argbuf[snlen-1] = 0; \
+        argv[curv] = argbuf; argv[++curv] = NULL; \
+        argbuf += snlen; argbuflen -= snlen; \
+    } while (0)
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+#endif
 void __attribute__((noreturn))
-nk_execute(const char *command, const char *args)
+nk_execute(const char *command, const char *args, char * const envp[])
 {
     char *argv[MAX_ARGS];
+    char argbuf_s[MAX_ARGBUF];
+    char *argbuf = argbuf_s;
     size_t curv = 0;
+    size_t argbuflen = sizeof argbuf_s;
 
     if (!command)
         _Exit(EXIT_SUCCESS);
 
     // strip the path from the command name and set argv[0]
     const char *p = strrchr(command, '/');
-    argv[curv] = xstrdup(p ? p + 1 : command);
-    argv[++curv] = NULL;
+    NK_GEN_ARG("%s", p ? p + 1 : command);
 
     if (args) {
         p = args;
@@ -130,26 +149,29 @@ nk_execute(const char *command, const char *args)
             }
 endarg:
             {
+                if (p == q) break;
                 // Push an argument.
-                size_t len = p - q + 1;
-                if (len > 1) {
-                    if (len > INT_MAX)
-                        suicide("%s argument n=%zu length is too long", __func__, curv);
-                    argv[curv] = xmalloc(len);
-                    ssize_t snlen = snprintf(argv[curv], len, "%.*s", (int)(len - 1), q);
-                    if (snlen < 0 || (size_t)snlen >= len)
-                        suicide("%s: argument n=%zu would truncate.  Not execing.",
-                                __func__, curv);
-                    q = p + 1;
-                    argv[++curv] = NULL;
+                if (q > p) {
+                    const char errstr[] = "nk_execute: argument length too long\n";
+                    write(STDERR_FILENO, errstr, sizeof errstr);
+                    _Exit(EXIT_FAILURE);
                 }
+                const size_t len = p - q;
+                NK_GEN_ARG("%.*s", (int)len, q);
+                q = p + 1;
                 if (atend || curv >= (MAX_ARGS - 1))
                     break;
             }
         }
     }
-    execv(command, argv);
-    log_error("%s: execv(%s) failed: %s", __func__, command, strerror(errno));
-    _Exit(EXIT_FAILURE);
+    execve(command, argv, envp);
+    {
+        const char errstr[] = "nk_execute: execve failed\n";
+        write(STDERR_FILENO, errstr, sizeof errstr);
+        _Exit(EXIT_FAILURE);
+    }
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
