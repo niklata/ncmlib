@@ -53,6 +53,7 @@
 /*
  * uid: userid of the user account that the environment will constructed for
  * chroot_path: path where the environment will be chrooted or NULL if no chroot
+ * path_var: value of the PATH variable in the environment or defaults if NULL
  * env: array of character pointers that will be filled in with the new environment
  * envlen: number of character pointers available in env; a terminal '0' ptr must be available
  * envbuf: character buffer that will be used for storing state associated with env
@@ -65,8 +66,8 @@
  * -3 if there is not enough space in env for the generated environment
  * -4 if chdir to homedir or rootdir failed
  */
-int nk_generate_env(uid_t uid, const char *chroot_path, char *env[], size_t envlen,
-                    char *envbuf, size_t envbuflen)
+int nk_generate_env(uid_t uid, const char *chroot_path, const char *path_var,
+                    char *env[], size_t envlen, char *envbuf, size_t envbuflen)
 {
     char pw_strs[1024];
     struct passwd pw_s;
@@ -84,7 +85,7 @@ int nk_generate_env(uid_t uid, const char *chroot_path, char *env[], size_t envl
     NK_GEN_ENV("LOGNAME=%s", pw->pw_name);
     NK_GEN_ENV("HOME=%s", pw->pw_dir);
     NK_GEN_ENV("SHELL=%s", pw->pw_shell);
-    NK_GEN_ENV("PATH=%s", uid > 0 ? DEFAULT_PATH : DEFAULT_ROOT_PATH);
+    NK_GEN_ENV("PATH=%s", path_var ? path_var : (uid > 0 ? DEFAULT_PATH : DEFAULT_ROOT_PATH));
     NK_GEN_ENV("PWD=%s", !chroot_path ? pw->pw_dir : "/");
     if (chroot_path && chroot(chroot_path)) return -4;
     if (chdir(chroot_path ? chroot_path : "/")) return -4;
