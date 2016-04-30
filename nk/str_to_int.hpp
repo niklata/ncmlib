@@ -1,7 +1,11 @@
 #ifndef NKLIB_STR_TO_INT_HPP_
 #define NKLIB_STR_TO_INT_HPP_
 
+#include <cstdint>
 #include <limits>
+#include <type_traits>
+#include <stdexcept>
+#include <string>
 
 namespace nk {
     namespace detail {
