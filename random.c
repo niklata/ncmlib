@@ -50,33 +50,21 @@ void nk_random_u64_init(struct nk_random_state_u64 *s)
     nk_get_hwrng((char *)&s->seed, sizeof s->seed);
 }
 
-#ifndef NK_NO_ASM
-// PCG XSL RR 128/64 LCG
-// Should be more resistant to reversing the internal PRNG state to predict
-// future outputs, although it should not be used where cryptographic
-// security is required.
-extern uint64_t nk_pcg64_roundfn(uint64_t seed[2]);
-uint64_t nk_random_u64(struct nk_random_state_u64 *s)
-{
-    return nk_pcg64_roundfn(s->seed);
+static inline uint64_t nk_random_rotl(const uint64_t x, int k) {
+    return (x << k) | (x >> (64 - k));
 }
-#else
-// Two independent PCG XSL RR 64/32 LCG
-// Does not have the enhanced prediction resilience of the 128-bit PCG.
-uint64_t nk_random_u64(struct nk_random_state_u64 *s)
-{
-    uint64_t os0 = s->seed[0];
-    s->seed[0] = s->seed[0] * 6364136223846793005ULL + 1442695040888963407ULL;
-    uint64_t os1 = s->seed[1];
-    s->seed[1] = s->seed[1] * 6364136223846793005ULL + 1442695040888963407ULL;
 
-    uint32_t xs0 = ((os0 ^ (os0 >> 18)) >> 27) & 0xffffffff;
-    uint32_t r0 = os0 >> 59;
-    uint32_t xs1 = ((os1 ^ (os1 >> 18)) >> 27) & 0xffffffff;
-    uint32_t r1 = os1 >> 59;
-    uint32_t o0 = (xs0 >> r0) | (xs0 << (32 - r0));
-    uint32_t o1 = (xs1 >> r1) | (xs1 << (32 - r1));
-    return (uint64_t)o0 | ((uint64_t)o1 << 32);
+// xoroshiro128p
+uint64_t nk_random_u64(struct nk_random_state_u64 *s)
+{
+    const uint64_t s0 = s->seed[0];
+    uint64_t s1 = s->seed[1];
+    const uint64_t result = s0 + s1;
+
+    s1 ^= s0;
+    s->seed[0] = nk_random_rotl(s0, 55) ^ s1 ^ (s1 << 14);
+    s->seed[1] = nk_random_rotl(s1, 36);
+
+    return result;
 }
-#endif
 
