@@ -1,5 +1,6 @@
 format ELF64
 
+section '.note.GNU-stack' align 16
 section '.text' executable align 16
 
 ;; uint64_t[2] seed -> uint64_t

@@ -1,5 +1,6 @@
 format ELF64
 
+section '.note.GNU-stack' align 16
 section '.text' executable align 16
 
 ;; argument order is: rdi,rsi,rdx,rcx,r8,r9 :: stack-RTL

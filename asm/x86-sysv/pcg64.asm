@@ -1,5 +1,6 @@
 format ELF
 
+section '.note.GNU-stack' align 16
 section '.text' executable align 16
 
 ;; uint32_t[4] seed, uint32_t[2] result -> void
