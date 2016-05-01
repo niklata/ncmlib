@@ -1,6 +1,6 @@
-/* random.h - non-cryptographic fast PRNG
+/* hwrng.h - access to system CRNG
  *
- * (c) 2013-2015 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2016 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,23 +25,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef NCMLIB_RANDOM__
-#define NCMLIB_RANDOM__
+#ifndef NCMLIB_HWCRNG__
+#define NCMLIB_HWCRNG__
 
-#include <stdint.h>
+#include <stddef.h>
 
-struct nk_random_state_u32 {
-    uint64_t seed;
-};
+void nk_get_hwrng(void *seed, size_t len);
 
-void nk_random_u32_init(struct nk_random_state_u32 *s);
-uint32_t nk_random_u32(struct nk_random_state_u32 *s);
-
-struct nk_random_state_u64 {
-    uint64_t seed[2];
-};
-
-void nk_random_u64_init(struct nk_random_state_u64 *s);
-uint64_t nk_random_u64(struct nk_random_state_u64 *s);
 #endif
+
 

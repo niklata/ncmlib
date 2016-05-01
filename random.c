@@ -26,111 +26,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "nk/hwrng.h"
 #include "nk/random.h"
-#include "nk/log.h"
-#include "nk/io.h"
-
-#ifdef NK_USE_GETRANDOM_SYSCALL
-#include <sys/syscall.h>
-#include <linux/random.h>
-static bool nk_getrandom(char seed[static 1], size_t len)
-{
-    size_t fetched = 0;
-    while (fetched < len) {
-        int r = syscall(SYS_getrandom, seed + fetched, len - fetched, 0);
-        if (r <= 0) {
-            if (r == 0) {
-                // Failsafe to guard against infinite loops.
-                log_warning("%s: getrandom() returned no entropy", __func__);
-                return false;
-            }
-            if (errno == EINTR)
-                continue;
-            log_warning("%s: getrandom() failed: %s", __func__, strerror(errno));
-            return false;
-        }
-        fetched += r;
-    }
-    return true;
-}
-#else
-static bool nk_getrandom(char seed[static 1], size_t len)
-{
-    return false;
-}
-#endif
-static bool nk_get_rnd_clk(char seed[static 1], size_t len)
-{
-    struct timespec ts;
-    for (size_t i = 0; i < len; ++i) {
-        int r = clock_gettime(CLOCK_REALTIME, &ts);
-        if (r < 0) {
-            log_warning("%s: Could not call clock_gettime(CLOCK_REALTIME): %s",
-                        __func__, strerror(errno));
-            return false;
-        }
-        char *p = (char *)&ts.tv_sec;
-        char *q = (char *)&ts.tv_nsec;
-        for (size_t j = 0; j < sizeof ts.tv_sec; ++j)
-            seed[i] ^= p[j];
-        for (size_t j = 0; j < sizeof ts.tv_nsec; ++j)
-            seed[i] ^= q[j];
-        // Force some scheduler jitter.
-        static const struct timespec st = { .tv_sec=0, .tv_nsec=1 };
-        nanosleep(&st, NULL);
-    }
-    return true;
-}
-
-static bool nk_get_urandom(char seed[static 1], size_t len)
-{
-    int fd = open("/dev/urandom", O_RDONLY);
-    if (fd < 0) {
-        log_warning("%s: Could not open /dev/urandom: %s", __func__,
-                    strerror(errno));
-        return false;
-    }
-    bool ret = true;
-    int r = safe_read(fd, seed, len);
-    if (r < 0) {
-        ret = false;
-        log_warning("%s: Could not read /dev/urandom: %s",
-                    __func__, strerror(errno));
-    }
-    close(fd);
-    return ret;
-}
-
-static void nk_get_hwrng(char seed[static 1], size_t len)
-{
-    if (nk_getrandom(seed, len))
-        return;
-    if (nk_get_urandom(seed, len))
-        return;
-    log_warning("%s: Seeding PRNG via system clock.  May be predictable.",
-                __func__);
-    if (nk_get_rnd_clk(seed, len))
-        return;
-    suicide("%s: All methods to seed PRNG failed.  Exiting.", __func__);
-}
 
 // PCG XSL RR 64/32 LCG; period is 2^64
-void nk_random_u32_init(struct nk_random_state_u32 s[static 1])
+void nk_random_u32_init(struct nk_random_state_u32 *s)
 {
     nk_get_hwrng((char *)&s->seed, sizeof s->seed);
 }
 
-uint32_t nk_random_u32(struct nk_random_state_u32 s[static 1])
+uint32_t nk_random_u32(struct nk_random_state_u32 *s)
 {
     uint64_t os = s->seed;
     s->seed = s->seed * 6364136223846793005ULL + 1442695040888963407ULL;
@@ -139,7 +45,7 @@ uint32_t nk_random_u32(struct nk_random_state_u32 s[static 1])
     return (xs >> r) | (xs << (32 - r));
 }
 
-void nk_random_u64_init(struct nk_random_state_u64 s[static 1])
+void nk_random_u64_init(struct nk_random_state_u64 *s)
 {
     nk_get_hwrng((char *)&s->seed, sizeof s->seed);
 }
@@ -150,14 +56,14 @@ void nk_random_u64_init(struct nk_random_state_u64 s[static 1])
 // future outputs, although it should not be used where cryptographic
 // security is required.
 extern uint64_t nk_pcg64_roundfn(uint64_t seed[2]);
-uint64_t nk_random_u64(struct nk_random_state_u64 s[static 1])
+uint64_t nk_random_u64(struct nk_random_state_u64 *s)
 {
     return nk_pcg64_roundfn(s->seed);
 }
 #else
 // Two independent PCG XSL RR 64/32 LCG
 // Does not have the enhanced prediction resilience of the 128-bit PCG.
-uint64_t nk_random_u64(struct nk_random_state_u64 s[static 1])
+uint64_t nk_random_u64(struct nk_random_state_u64 *s)
 {
     uint64_t os0 = s->seed[0];
     s->seed[0] = s->seed[0] * 6364136223846793005ULL + 1442695040888963407ULL;
