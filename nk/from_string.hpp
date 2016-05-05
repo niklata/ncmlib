@@ -2,6 +2,8 @@
 #define NKLIB_FROM_STRING_HPP_
 
 #include <cstdint>
+#include <cstdlib>
+#include <cmath>
 #include <limits>
 #include <type_traits>
 #include <stdexcept>
@@ -93,6 +95,37 @@ namespace nk {
             throw std::invalid_argument("conversion impossible");
         }
 
+        static inline double str_to_double(const char *s)
+        {
+            char *endptr;
+            const auto ret = std::strtod(s, &endptr);
+            if (endptr == s)
+                throw std::invalid_argument("conversion impossible");
+            if ((ret == HUGE_VAL || ret == -HUGE_VAL || ret == 0.) && errno == ERANGE)
+                throw std::out_of_range("would overflow or underflow");
+            return ret;
+        }
+        static inline float str_to_float(const char *s)
+        {
+            char *endptr;
+            const auto ret = std::strtof(s, &endptr);
+            if (endptr == s)
+                throw std::invalid_argument("conversion impossible");
+            if ((ret == HUGE_VALF || ret == -HUGE_VALF || ret == 0.f) && errno == ERANGE)
+                throw std::out_of_range("would overflow or underflow");
+            return ret;
+        }
+        static inline long double str_to_long_double(const char *s)
+        {
+            char *endptr;
+            const auto ret = std::strtold(s, &endptr);
+            if (endptr == s)
+                throw std::invalid_argument("conversion impossible");
+            if ((ret == HUGE_VALL || ret == -HUGE_VALL || ret == 0.l) && errno == ERANGE)
+                throw std::out_of_range("would overflow or underflow");
+            return ret;
+        }
+
         template <typename T,
                   typename std::enable_if<std::is_integral<T>::value, T>::type = 0,
                   typename std::enable_if<std::is_unsigned<T>::value, T>::type = 0
@@ -120,6 +153,49 @@ namespace nk {
                   >
         T do_from_string(const char *s, size_t c) {
             return detail::str_to_signed_integer<T>(s, c);
+        }
+
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, double>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s) {
+            return str_to_double(s);
+        }
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, float>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s) {
+            return str_to_float(s);
+        }
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, long double>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s) {
+            return str_to_long_double(s);
+        }
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, double>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s, size_t) {
+            return str_to_double(s);
+        }
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, float>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s, size_t) {
+            return str_to_float(s);
+        }
+        template <typename T,
+                  typename std::enable_if<std::is_floating_point<T>::value, typename std::add_pointer<T>::type>::type = nullptr,
+                  typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, long double>::value, typename std::add_pointer<T>::type>::type = nullptr
+                  >
+        T do_from_string(const char *s, size_t) {
+            return str_to_long_double(s);
         }
     }
 
