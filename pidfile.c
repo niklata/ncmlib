@@ -31,34 +31,27 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include "nk/pidfile.h"
 #include "nk/log.h"
+#include "nk/io.h"
 
 void write_pid(const char file[static 1]) {
-    FILE *f = fopen(file, "w");
-    if (!f)
-        suicide("%s: fopen(%s) failed: %s", __func__, file, strerror(errno));
+    int fd = open(file, O_WRONLY|O_CREAT|O_CLOEXEC, 00744);
+    if (fd < 0)
+        suicide("%s: open(%s) failed: %s", __func__, file, strerror(errno));
     pid_t pid = getpid();
-    int r = fprintf(f, "%u", pid);
-    if (r < 0)
-        suicide("%s: fprintf(%s, %u) failed: %s", __func__, file, pid,
-                strerror(errno));
-    if (fclose(f))
-        suicide("%s: fclose(%s) failed: %s", __func__, file, strerror(errno));
+    char wbuf[64];
+    ssize_t r = snprintf(wbuf, sizeof wbuf, "%u", pid);
+    if (r < 0 || (size_t)r >= sizeof wbuf)
+        suicide("%s: snprintf(%s, %u) failed: %s", __func__, file, pid, strerror(errno));
+    ssize_t written = safe_write(fd, wbuf, r);
+    if (written < 0 || written != r)
+        suicide("%s: write(%s) failed: %s", __func__, file, strerror(errno));
+    if (close(fd))
+        suicide("%s: close(%s) failed: %s", __func__, file, strerror(errno));
 }
 
-/* Return 0 on success, -1 on failure. */
-int file_exists(const char file[static 1], const char mode[static 1])
-{
-    FILE *f = fopen(file, mode);
-    if (!f) {
-        log_line("%s: fopen(%s, %o) failed: %s", __func__, file, mode,
-                 strerror(errno));
-        return -1;
-    }
-    if (fclose(f))
-        log_line("%s: fclose(%s) failed: %s", __func__, file, strerror(errno));
-    return 0;
-}

@@ -30,7 +30,6 @@
 #define NCM_PIDFILE_H_
 
 void write_pid(const char * const file);
-int file_exists(const char * const file, const char * const mode);
 
 #endif
 
