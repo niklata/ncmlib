@@ -1,6 +1,6 @@
 /* random.h - non-cryptographic fast PRNG
  *
- * (c) 2013-2015 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2013-2017 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,18 +30,18 @@
 
 #include <stdint.h>
 
-struct nk_random_state_u32 {
-    uint64_t seed;
+struct nk_random_state {
+    uint32_t seed[4];
 };
 
-void nk_random_u32_init(struct nk_random_state_u32 *s);
-uint32_t nk_random_u32(struct nk_random_state_u32 *s);
+void nk_random_init(struct nk_random_state *s);
+uint32_t nk_random_u32(struct nk_random_state *s);
+static inline uint64_t nk_random_u64(struct nk_random_state *s)
+{
+    const uint64_t hi = nk_random_u32(s);
+    const uint64_t lo = nk_random_u32(s);
+    return (hi << 32) | lo;
+}
 
-struct nk_random_state_u64 {
-    uint64_t seed[2];
-};
-
-void nk_random_u64_init(struct nk_random_state_u64 *s);
-uint64_t nk_random_u64(struct nk_random_state_u64 *s);
 #endif
 

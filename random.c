@@ -1,6 +1,6 @@
 /* random.c - non-cryptographic fast PRNG
  *
- * (c) 2013-2016 Nicholas J. Kain <njkain at gmail dot com>
+ * (c) 2013-2017 Nicholas J. Kain <njkain at gmail dot com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,41 +30,26 @@
 #include "nk/hwrng.h"
 #include "nk/random.h"
 
-// PCG XSL RR 64/32 LCG; period is 2^64
-void nk_random_u32_init(struct nk_random_state_u32 *s)
+// Tyche PRNG: https://eden.dei.uc.pt/~sneves/pubs/2011-snfa2.pdf
+
+void nk_random_init(struct nk_random_state *s)
 {
-    nk_get_hwrng((char *)&s->seed, sizeof s->seed);
+    nk_get_hwrng(s->seed, sizeof(uint32_t) * 2);
+    s->seed[2] = 2654435769;
+    s->seed[3] = 1367130551;
+    for (unsigned i = 0; i < 20; ++i) (void)nk_random_u32(s);
 }
 
-uint32_t nk_random_u32(struct nk_random_state_u32 *s)
-{
-    uint64_t os = s->seed;
-    s->seed = s->seed * 6364136223846793005ULL + 1442695040888963407ULL;
-    uint32_t xs = ((os ^ (os >> 18)) >> 27) & 0xffffffff;
-    uint32_t r = os >> 59;
-    return (xs >> r) | (xs << (32 - r));
+static inline uint32_t rotl32(const uint32_t x, int k) {
+    return (x << k) | (x >> (32 - k));
 }
 
-void nk_random_u64_init(struct nk_random_state_u64 *s)
+uint32_t nk_random_u32(struct nk_random_state *s)
 {
-    nk_get_hwrng((char *)&s->seed, sizeof s->seed);
-}
-
-static inline uint64_t nk_random_rotl(const uint64_t x, int k) {
-    return (x << k) | (x >> (64 - k));
-}
-
-// xoroshiro128p
-uint64_t nk_random_u64(struct nk_random_state_u64 *s)
-{
-    const uint64_t s0 = s->seed[0];
-    uint64_t s1 = s->seed[1];
-    const uint64_t result = s0 + s1;
-
-    s1 ^= s0;
-    s->seed[0] = nk_random_rotl(s0, 55) ^ s1 ^ (s1 << 14);
-    s->seed[1] = nk_random_rotl(s1, 36);
-
-    return result;
+    s->seed[0] += s->seed[1]; s->seed[3] = rotl32(s->seed[3] ^ s->seed[0], 16);
+    s->seed[2] += s->seed[3]; s->seed[1] = rotl32(s->seed[1] ^ s->seed[2], 12);
+    s->seed[0] += s->seed[1]; s->seed[3] = rotl32(s->seed[3] ^ s->seed[0], 8);
+    s->seed[2] += s->seed[3]; s->seed[1] = rotl32(s->seed[1] ^ s->seed[2], 7);
+    return s->seed[1];
 }
 
