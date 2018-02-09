@@ -16,6 +16,5 @@ before building.
 | pidfile      |  Pidfile creation                               |
 | privilege    |  Drop uid/gid/capabilities securely             |
 | random       |  Tyche-based PRNG                               |
-| seccomp_bpf  |  Wrappers for Linux seccomp syscall restriction |
 | signals      |  Wrappers for signal hooks                      |
 
