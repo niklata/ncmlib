@@ -47,7 +47,7 @@
         ssize_t snlen = snprintf(envbuf, envbuflen, GEN_STR "0", __VA_ARGS__); \
         if (snlen < 0 || (size_t)snlen >= envbuflen) return -2; \
         if (snlen > 0) envbuf[snlen-1] = 0; \
-        env[env_offset++] = envbuf; envbuf += snlen; envbuflen -= snlen; \
+        env[env_offset++] = envbuf; envbuf += snlen; envbuflen -= (size_t)snlen; \
     } while (0)
 
 /*
@@ -103,7 +103,7 @@ int nk_generate_env(uid_t uid, const char *chroot_path, const char *path_var,
         } \
         if (snlen > 0) argbuf[snlen-1] = 0; \
         argv[curv] = argbuf; argv[++curv] = NULL; \
-        argbuf += snlen; argbuflen -= snlen; \
+        argbuf += snlen; argbuflen -= (size_t)snlen; \
     } while (0)
 
 #ifdef __GNUC__
@@ -158,7 +158,7 @@ endarg:
                     write(STDERR_FILENO, errstr, sizeof errstr);
                     _Exit(EXIT_FAILURE);
                 }
-                const size_t len = p - q;
+                const size_t len = (size_t)(p - q);
                 NK_GEN_ARG("%.*s", (int)len, q);
                 q = p + 1;
                 if (atend || curv >= (MAX_ARGS - 1))

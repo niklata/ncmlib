@@ -58,7 +58,7 @@ static bool nk_getrandom(char *seed, size_t len)
             log_warning("%s: getrandom() failed: %s", __func__, strerror(errno));
             return false;
         }
-        fetched += r;
+        fetched += (size_t)r;
     }
     return true;
 }

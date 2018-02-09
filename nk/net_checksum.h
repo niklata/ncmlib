@@ -45,7 +45,9 @@ static uint16_t net_checksum161c(const void *buf, size_t size)
 // AB given the checksums of the individual parts CS(A) and CS(B).
 static inline uint16_t net_checksum161c_add(uint16_t a, uint16_t b)
 {
-    return ~net_checksum161c_foldcarry((~a & 0xffff) + (~b & 0xffff));
+    const uint32_t A = a;
+    const uint32_t B = b;
+    return ~net_checksum161c_foldcarry((~A & 0xffffu) + (~B & 0xffffu));
 }
 
 #endif

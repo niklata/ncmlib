@@ -107,7 +107,7 @@ static void nk_set_capability_epilogue(const unsigned char *caps,
         if (j >= csize)
             suicide("%s: caps[%zu] == %u, which is >= %u and out of range",
                     __func__, caps[i], csize * 32);
-        mask[j] |= CAP_TO_MASK(caps[i] - 32 * j);
+        mask[j] |= (uint32_t)CAP_TO_MASK(caps[i] - 32 * j);
     }
     for (size_t i = 0; i < csize; ++i) {
         data[i].effective = mask[i];
@@ -159,66 +159,66 @@ void nk_set_uidgid(uid_t uid, gid_t gid, const unsigned char *caps,
         suicide("%s: getresgid failed: %s", __func__, strerror(errno));
     if (rgid != gid || egid != gid || sgid != gid)
         suicide("%s: getresgid failed; the OS or libc is broken", __func__);
-    if (uid && setreuid(-1, 0) == 0)
+    if (uid && setreuid((uid_t)-1, 0) == 0)
         suicide("%s: OS or libc broken; able to restore privilege after drop",
                 __func__);
     nk_set_capability_epilogue(caps, caplen, cversion, csize);
     nk_set_no_new_privs();
 }
 
-int nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid)
+uid_t nk_uidgidbyname(const char *username, uid_t *uid, gid_t *gid)
 {
     if (!username)
-        return -1;
+        return (uid_t)-1;
     struct passwd *pws = getpwnam(username);
     if (!pws) {
         for (size_t i = 0; username[i]; ++i) {
             if (!isdigit(username[i]))
-                return -1;
+                return (uid_t)-1;
         }
         char *p;
         long lt = strtol(username, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
-            return -1;
+            return (uid_t)-1;
         if (lt < 0 || lt > (long)UINT_MAX)
-            return -1;
+            return (uid_t)-1;
         if (p == username)
-            return -1;
+            return (uid_t)-1;
         pws = getpwuid((uid_t)lt);
         if (!pws)
-            return -1;
+            return (uid_t)-1;
     }
     if (gid)
         *gid = pws->pw_gid;
     if (uid)
         *uid = pws->pw_uid;
-    return 0;
+    return (uid_t)0;
 }
 
-int nk_gidbyname(const char *groupname, gid_t *gid)
+gid_t nk_gidbyname(const char *groupname, gid_t *gid)
 {
     if (!groupname)
-        return -1;
+        return (gid_t)-1;
     struct group *grp = getgrnam(groupname);
     if (!grp) {
         for (size_t i = 0; groupname[i]; ++i) {
             if (!isdigit(groupname[i]))
-                return -1;
+                return (gid_t)-1;
         }
         char *p;
         long lt = strtol(groupname, &p, 10);
         if (errno == ERANGE && (lt == LONG_MIN || lt == LONG_MAX))
-            return -1;
+            return (gid_t)-1;
         if (lt < 0 || lt > (long)UINT_MAX)
-            return -1;
+            return (gid_t)-1;
         if (p == groupname)
-            return -1;
+            return (gid_t)-1;
         grp = getgrgid((gid_t)lt);
         if (!grp)
-            return -1;
+            return (gid_t)-1;
     }
     if (gid)
         return grp->gr_gid;
-    return 0;
+    return (gid_t)0;
 }
 

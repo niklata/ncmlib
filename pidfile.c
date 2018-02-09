@@ -48,7 +48,7 @@ void write_pid(const char file[static 1]) {
     ssize_t r = snprintf(wbuf, sizeof wbuf, "%u", pid);
     if (r < 0 || (size_t)r >= sizeof wbuf)
         suicide("%s: snprintf(%s, %u) failed: %s", __func__, file, pid, strerror(errno));
-    ssize_t written = safe_write(fd, wbuf, r);
+    ssize_t written = safe_write(fd, wbuf, (size_t)r);
     if (written < 0 || written != r)
         suicide("%s: write(%s) failed: %s", __func__, file, strerror(errno));
     if (close(fd))
