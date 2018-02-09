@@ -2,6 +2,7 @@
 #define NKXA_OPTIONARG_HPP_
 
 #include "optionparser.hpp"
+#include <fmt/printf.h>
 
 struct Arg : public option::Arg
 {
